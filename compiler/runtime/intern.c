@@ -253,11 +253,8 @@ void* SKIP_intern_shared(void* obj) {
   sk_cell_t* pages = sk_get_pages(nbr_pages);
   int* large_pages = sk_malloc(sizeof(int) * nbr_pages);
 
-  {
-    int i;
-    for (i = 0; i < nbr_pages; i++) {
-      large_pages[i] = 0;
-    }
+  for (int i = 0; i < nbr_pages; i++) {
+    large_pages[i] = 0;
   }
 
   sk_stack_init(st, STACK_INIT_CAPACITY);
@@ -331,12 +328,9 @@ void* SKIP_intern_shared(void* obj) {
     }
   }
 
-  {
-    int i;
-    for (i = 0; i < nbr_pages; i++) {
-      if (large_pages[i]) {
-        pages[i].value = (uint64_t)pages[i].key;
-      }
+  for (int i = 0; i < nbr_pages; i++) {
+    if (large_pages[i]) {
+      pages[i].value = (uint64_t)pages[i].key;
     }
   }
 
