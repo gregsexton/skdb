@@ -59,6 +59,9 @@ char* SKIP_get_local_context() {
 
 void SKIP_Regex_initialize() {}
 
+void SKIP_print_stack_trace() {
+  todo();
+}
 void SKIP_print_last_exception_stack_trace_and_exit() {
   todo();
 }
