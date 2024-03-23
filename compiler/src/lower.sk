@@ -475,7 +475,7 @@ mutable private class .Lower{
 
   private mutable fun lowerStringHash(sh: StringHash): void {
     // All strings are LongString, so we can just load the hash.
-    this.loadInvariantUInt32(sh, -4)
+    this.loadInvariantUInt32(sh, -8)
   }
 
   private mutable fun lowerCallFunction(call: CallFunction): void {

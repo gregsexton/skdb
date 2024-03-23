@@ -3522,7 +3522,7 @@ private fun llvmWrite(instr: Stmt, asm: mutable FunAsmDefBuilder): void {
         (acc, case) -> {
           (_, str) = case;
           hash = str.hashToEmit();
-          header = hash.shl(32).or(str.utf8.size());
+          header = str.utf8.size().shl(32).or(hash);
           acc.setWith(header, Array[case], (old, v) -> {
             old.concat(v)
           })
