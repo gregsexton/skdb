@@ -180,8 +180,8 @@ SKIP_gc_type_t* get_gc_type(char* skip_object);
 /*****************************************************************************/
 
 typedef struct {
-  uint32_t size;
   uint32_t hash;
+  uint32_t size;
   unsigned char data[0];
 } sk_string_t;
 
