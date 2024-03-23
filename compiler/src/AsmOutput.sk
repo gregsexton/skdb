@@ -1942,13 +1942,13 @@ mutable class .AsmOutput{
           } else {
             Some(
               i match {
-              | 0 ->
+              | 1 ->
                 StaticImageField(
                   // length
                   ConstantInt{id => InstrID::none, typ => tInt32, value => len},
-                  0,
+                  32,
                 )
-              | 1 ->
+              | 0 ->
                 StaticImageField(
                   // hash
                   ConstantInt{
@@ -1956,7 +1956,7 @@ mutable class .AsmOutput{
                     typ => tInt32,
                     value => str.hashToEmit(),
                   },
-                  32,
+                  0,
                 )
               | n ->
                 // padded character data
