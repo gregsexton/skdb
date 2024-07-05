@@ -1,15 +1,22 @@
 module Insight;
 
-fun printDag(
+private fun jserialise<T>(x: T): JSON.String {
+  ret = "";
+  capture = (s) -> !ret = s;
+  writer = mutable Debug.BufferedWriter(capture, Int::max);
+  inspect(x).print(writer);
+  writer.flush();
+  JSON.String(ret);
+}
+
+private fun buildDepObject(
   context: mutable SKStore.Context,
   dirname: SKStore.DirName,
   key: SKStore.Key,
-): void {
-  print_debug("{{{ printDag [nlyjx]");
-  print_debug_raw(": [efeti] dirname: ");
-  debug(dirname.dirName);
-  print_debug_raw(": [rskrt] key: ");
-  debug(key);
+): JSON.Object {
+  obj = mutable Map<String, JSON.Value>[];
+  obj!["dir"] = JSON.String(dirname.dirName);
+  obj!["key"] = jserialise(key);
 
   dir = context.dirs.maybeGet(dirname) match {
   | None() -> invariant_violation(`could not find ${dirname}`)
@@ -17,77 +24,63 @@ fun printDag(
   | Some(_) -> invariant_violation("unsupported dir type")
   };
 
-  // listing all the keys
-  // for (k in dir.keys()) {
-  //   print_debug_raw(": [mjxna] key: ");
-  //   debug(k);
-  // };
-
-  // fieldnames = SKStore.OJSON(getFieldNames(context, dirname));
+  obj!["dir_is_input"] = JSON.Bool(dir.input);
 
   data = dir.unsafeGetAllDataIter(key); // iterator is empty if key does not exist
-  for ((_tick, source, _writer, files) in data) {
-    // print_debug_raw(": [tycfg] tick: ");
-    // debug(tick);
-    // print_debug_raw(": [sgtta] source: ");
-    // debug(source);
-    // print_debug_raw(": [tbgkg] writer: ");
-    // debug(writer);
-    print_debug("{{{ single (key, source) [ocuei]");
-    for (file in files) {
-      file match {
-      | vals @ SKDB.RowValues _ ->
-        print_debug_raw(": [yujne] vals: ");
-        debug(vals)
-      // print_debug(vals.toStringSingle(fieldnames)) // TODO: should output a json value that I add in to a json array
-      | x @ _ ->
-        print_debug_raw(": [tmabm] file: ");
-        debug(x)
-      }
-    };
-    print_debug("}}} single (key, source) [ocuei]");
 
-    if (dir.input) {
-      print_debug("input directory"); // TODO: could be mirrored and now we need to walk a network hop, process by caller
-      // return void;
-    } else {
-      printDag(context, source.dirName, source.baseName);
+  contributions = mutable Vector[];
+
+  for ((tick, source, writer, files) in data) {
+    contribution = mutable Map<String, JSON.Value>[];
+
+    contribution!["tick"] = jserialise(tick);
+    contribution!["writer"] = jserialise(writer);
+
+    contribution!["files"] = JSON.Array::createFromIterator(
+      files.iterator().map(file -> {
+        file match {
+        // | vals @ SKDB.RowValues _ ->
+        // does not work as intermediate tables don't necessarily get registered with fields
+        // fieldnames = SKStore.OJSON(SKDB.getFieldNames(context, dirname));
+        // JSON.String(vals.toStringSingle(fieldnames)) // TODO: should output a json array, not a string
+        | x -> jserialise(x);
+        }
+      }),
+    );
+
+    if (!dir.input) {
+      contribution!["source"] = buildDepObject(
+        context,
+        source.dirName,
+        source.baseName,
+      );
     };
+
+    contributions.push(JSON.Object(contribution.chill()));
   };
-  print_debug("}}} printDag [nlyjx]");
+
+  obj!["contributions"] = JSON.Array(contributions.chill());
+  JSON.Object(obj.chill());
 }
 
-fun printStuff(context: mutable SKStore.Context): void {
-  // dirInput = "/test_view_child/";
-  dirInput = "/test_view_join/";
-  _keyInput = ""; // TODO: parse to produce key
-
-  dirname = SKStore.DirName::create(dirInput);
-  // key = SKDB.RowKey(
-  //   SKDB.RowValues(Array[Some(SKDB.CInt(4))], 1),
-  //   Array[(0, SQLParser.IASC(), SQLParser.INTEGER())],
-  // );
-  key = SKDB.RowKey(
-    SKDB.RowValues(
-      Array[
-        Some(SKDB.CInt(1)),
-        Some(SKDB.CString("foo")),
-        Some(SKDB.CString("bar")),
-      ],
-      1,
-    ),
-    Array[
-      (0, SQLParser.IASC(), SQLParser.INTEGER()),
-      (1, SQLParser.IASC(), SQLParser.TEXT()),
-      (2, SQLParser.IASC(), SQLParser.TEXT()),
-    ],
-  );
-
+fun upstream(
+  context: mutable SKStore.Context,
+  dirname: SKStore.DirName,
+  key: SKStore.Key,
+): void {
   // TODO: walk source/writer for the input dag. it's a dag right? must be. how is this represented when we join?
   // TODO: parents for the functions that were used at each step
   // TODO: deps from context
 
-  printDag(context, dirname, key);
+  obj = buildDepObject(context, dirname, key);
+  print_string(obj.encode());
 }
 
 module end;
+
+// TODO:
+// listing all the keys
+// for (k in dir.keys()) {
+//   print_debug_raw(": [mjxna] key: ");
+//   debug(k);
+// };
