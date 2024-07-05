@@ -1,0 +1,93 @@
+module Insight;
+
+fun printDag(
+  context: mutable SKStore.Context,
+  dirname: SKStore.DirName,
+  key: SKStore.Key,
+): void {
+  print_debug("{{{ printDag [nlyjx]");
+  print_debug_raw(": [efeti] dirname: ");
+  debug(dirname.dirName);
+  print_debug_raw(": [rskrt] key: ");
+  debug(key);
+
+  dir = context.dirs.maybeGet(dirname) match {
+  | None() -> invariant_violation(`could not find ${dirname}`)
+  | Some(dir @ SKStore.EagerDir _) -> dir
+  | Some(_) -> invariant_violation("unsupported dir type")
+  };
+
+  // listing all the keys
+  // for (k in dir.keys()) {
+  //   print_debug_raw(": [mjxna] key: ");
+  //   debug(k);
+  // };
+
+  // fieldnames = SKStore.OJSON(getFieldNames(context, dirname));
+
+  data = dir.unsafeGetAllDataIter(key); // iterator is empty if key does not exist
+  for ((_tick, source, _writer, files) in data) {
+    // print_debug_raw(": [tycfg] tick: ");
+    // debug(tick);
+    // print_debug_raw(": [sgtta] source: ");
+    // debug(source);
+    // print_debug_raw(": [tbgkg] writer: ");
+    // debug(writer);
+    print_debug("{{{ single (key, source) [ocuei]");
+    for (file in files) {
+      file match {
+      | vals @ SKDB.RowValues _ ->
+        print_debug_raw(": [yujne] vals: ");
+        debug(vals)
+      // print_debug(vals.toStringSingle(fieldnames)) // TODO: should output a json value that I add in to a json array
+      | x @ _ ->
+        print_debug_raw(": [tmabm] file: ");
+        debug(x)
+      }
+    };
+    print_debug("}}} single (key, source) [ocuei]");
+
+    if (dir.input) {
+      print_debug("input directory"); // TODO: could be mirrored and now we need to walk a network hop, process by caller
+      // return void;
+    } else {
+      printDag(context, source.dirName, source.baseName);
+    };
+  };
+  print_debug("}}} printDag [nlyjx]");
+}
+
+fun printStuff(context: mutable SKStore.Context): void {
+  // dirInput = "/test_view_child/";
+  dirInput = "/test_view_join/";
+  _keyInput = ""; // TODO: parse to produce key
+
+  dirname = SKStore.DirName::create(dirInput);
+  // key = SKDB.RowKey(
+  //   SKDB.RowValues(Array[Some(SKDB.CInt(4))], 1),
+  //   Array[(0, SQLParser.IASC(), SQLParser.INTEGER())],
+  // );
+  key = SKDB.RowKey(
+    SKDB.RowValues(
+      Array[
+        Some(SKDB.CInt(1)),
+        Some(SKDB.CString("foo")),
+        Some(SKDB.CString("bar")),
+      ],
+      1,
+    ),
+    Array[
+      (0, SQLParser.IASC(), SQLParser.INTEGER()),
+      (1, SQLParser.IASC(), SQLParser.TEXT()),
+      (2, SQLParser.IASC(), SQLParser.TEXT()),
+    ],
+  );
+
+  // TODO: walk source/writer for the input dag. it's a dag right? must be. how is this represented when we join?
+  // TODO: parents for the functions that were used at each step
+  // TODO: deps from context
+
+  printDag(context, dirname, key);
+}
+
+module end;
