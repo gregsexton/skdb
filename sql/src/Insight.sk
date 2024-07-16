@@ -1,5 +1,13 @@
 module Insight;
 
+private fun jserialiseStr(x: String): JSON.String {
+  JSON.String(x)
+}
+
+private fun jserialiseInt(x: Int): JSON.Number {
+  JSON.IntNumber(x)
+}
+
 private fun jserialise<T>(x: T): JSON.String {
   ret = "";
   capture = (s) -> !ret = s;
@@ -33,7 +41,7 @@ private fun buildDepObject(
   for ((tick, source, writer, files) in data) {
     contribution = mutable Map<String, JSON.Value>[];
 
-    contribution!["tick"] = jserialise(tick);
+    contribution!["tick"] = jserialiseInt(tick.value);
     contribution!["writer"] = jserialise(writer);
 
     contribution!["files"] = JSON.Array::createFromIterator(
@@ -41,9 +49,10 @@ private fun buildDepObject(
         file match {
         // | vals @ SKDB.RowValues _ ->
         // does not work as intermediate tables don't necessarily get registered with fields
+        // if can't find fieldnames use csv? just use csv?
         // fieldnames = SKStore.OJSON(SKDB.getFieldNames(context, dirname));
         // JSON.String(vals.toStringSingle(fieldnames)) // TODO: should output a json array, not a string
-        | x -> jserialise(x);
+        | x -> jserialise(x)
         }
       }),
     );
@@ -68,7 +77,6 @@ fun upstream(
   dirname: SKStore.DirName,
   key: SKStore.Key,
 ): void {
-  // TODO: walk source/writer for the input dag. it's a dag right? must be. how is this represented when we join?
   // TODO: parents for the functions that were used at each step
   // TODO: deps from context
 
