@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import * as d3dag from "d3-dag";
 import { useEffect } from "react";
 
 import data from "../../../gds/log/insight.json?raw";
@@ -47,25 +48,26 @@ function buildDataModel(src: Source) {
 
   const nodeIdx = new Map();
 
-  function walk(src: Source, target: number|undefined = undefined) {
-    console.log(': [fbcfr] target: ', target);
-    console.log(': [rrmcy] src: ', src);
+  function walk(src: Source, target: number | undefined = undefined) {
     const id = srcId(src);
 
-    let idx = nodeIdx.get(id);;
+    let idx = nodeIdx.get(id);
 
     if (idx === undefined) {
       idx = nodes.length;
       nodeIdx.set(id, idx);
-      nodes.push(src);
+      nodes.push({ ...src, id, parentIds: [] });
     }
+
+    const node = nodes[idx];
 
     if (target !== undefined) {
-      const link = {source: idx, target: target};
+      const link = { source: idx, target: target };
       links.push(link);
+      node.parentIds.push(nodes[target].id);
     }
 
-    for (const c of (src.contributions ?? [])) {
+    for (const c of src.contributions ?? []) {
       // TODO: add data about contribution to edge
       if (!src.dir_is_input) {
         walk(c.source, idx);
@@ -75,21 +77,21 @@ function buildDataModel(src: Source) {
 
   walk(src);
 
-  return [nodes, links];
+  return d3dag.graphStratify()(nodes);
 }
 
 function createVis() {
   const svg = d3.select("#key_vis");
 
-  const width = parseInt(svg.style("width").replace("px", ""))
+  const width = parseInt(svg.style("width").replace("px", ""));
   const height = parseInt(svg.style("height").replace("px", ""));
 
-  const [nodes, links] = buildDataModel(getData());
+  const dag = buildDataModel(getData());
 
   function updateLinks() {
     svg
       .selectAll("line")
-      .data(links)
+      .data(dag.links())
       .join("line")
       .attr("stroke", "#000000")
       .attr("x1", function (d) {
@@ -109,7 +111,7 @@ function createVis() {
   function updateNodes() {
     svg
       .selectAll("text")
-      .data(nodes)
+      .data(dag.nodes())
       .join("text")
       .text(function (d) {
         return d.dir;
@@ -133,9 +135,28 @@ function createVis() {
     updateNodes();
   }
 
-  d3.forceSimulation(nodes)
-    .force("charge", d3.forceManyBody().strength(-800))
-    .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("link", d3.forceLink().links(links).distance(150))
-    .on("tick", drawVis);
+  const nodesize = 5;
+  const layout = d3dag
+    .sugiyama()
+    .nodeSize([nodesize, nodesize])
+    .gap([400, 100]);
+  layout(dag);
+
+  // render nodes
+  // TODO: do this in their own group
+  svg
+    .selectAll("g")
+    .data(dag.nodes())
+    .join((enter) =>
+      enter
+        .append("g")
+        .attr("transform", ({ x, y }) => `translate(${x}, ${y})`)
+        .attr("opacity", 1)
+        .call((enter) => {
+          enter.append("circle").attr("r", nodesize);
+          enter
+            .append("text")
+            .text((d) => d.data.id.slice(0, 50));
+        }),
+    );
 }
