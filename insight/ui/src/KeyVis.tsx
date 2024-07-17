@@ -80,6 +80,22 @@ function buildDataModel(src: Source) {
   return d3dag.graphStratify()(nodes);
 }
 
+const getPosition = (function () {
+  let lastKnownCursorPos: { x: number; y: number } | undefined = undefined;
+  return (event) => {
+    if (!event.clientX) {
+      return lastKnownCursorPos;
+    }
+
+    lastKnownCursorPos = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+
+    return lastKnownCursorPos;
+  };
+})();
+
 function createVis() {
   const svg = d3.select("#key_vis");
   const dag = buildDataModel(getData());
@@ -103,45 +119,79 @@ function createVis() {
     .attr("d", "M0,-5L10,0L0,5")
     .attr("class", "arrowHead");
 
-  svg
-    .select("#nodes")
-    .selectAll("g")
-    .data(dag.nodes())
-    .join((enter) =>
-      enter
-        .append("g")
-        .attr("transform", ({ x, y }) => `translate(${x+5}, ${y+5})`)
-        .call((enter) => {
-          const div = enter
-            .append("foreignObject")
-            .attr("width", nodeW)
-            .attr("height", nodeH)
-            .append("xhtml:div")
-            .attr("class", "node");
-          div
-            .append("pre")
-            .attr("class", "dir")
-            .append("code")
-            .text((d) => d.data.dir);
-          div
-            .append("pre")
-            .attr("class", "key")
-            .append("code")
-            .text((d) => d.data.key);
-        }),
-    );
-
-  const line = d3.line().curve(d3.curveBumpY);
-  svg
-    .select("#links")
-    .selectAll("path")
-    .data(dag.links())
-    .join((enter) =>
-      enter
-        .append("path")
-        .attr("d", ({ points }) => line(points))
-        .attr("marker-end", "url(#arrow)"),
-    );
-
   // TODO: center on the root node's x,y
+  const line = d3.line().curve(d3.curveBumpY);
+
+  function updateVis() {
+    svg
+      .select("#nodes")
+      .selectAll("g")
+      .data(dag.nodes())
+      .join("g")
+      .attr("transform", ({ x, y }) => `translate(${x + 5}, ${y + 5})`)
+      .call((selection) => {
+        const div = selection
+          .append("foreignObject")
+          .attr("width", nodeW)
+          .attr("height", nodeH)
+          .append("xhtml:div")
+          .attr("class", "node");
+
+        let origPos: { x: number; y: number } | undefined;
+
+        div
+          .append("div")
+          .on("mousedown", (e, d) => {
+            origPos = getPosition(e);
+          })
+          .on("mousemove", (e, d) => {
+            if (origPos === undefined) {
+              return;
+            }
+            const thisPos = getPosition(e);
+
+            if (thisPos === undefined) {
+              return;
+            }
+            d.ux = (d.ux ?? 0) - (origPos.x - thisPos.x);
+            updateVis();
+          })
+          .on("mouseup", (e, d) => {
+            if (origPos === undefined) {
+              return;
+            }
+            const thisPos = getPosition(e);
+
+            if (thisPos === undefined) {
+              return;
+            }
+            d.ux = (d.ux ?? 0) - (origPos.x - thisPos.x);
+            origPos = undefined;
+            updateVis();
+          })
+          .append("pre")
+          .attr("class", "dir")
+          .append("code")
+          .text((d) => d.data.dir);
+
+        div
+          .append("pre")
+          .attr("class", "key")
+          .append("code")
+          .text((d) => d.data.key);
+      });
+
+    svg
+      .select("#links")
+      .selectAll("path")
+      .data(dag.links())
+      .join((enter) =>
+        enter
+          .append("path")
+          .attr("d", ({ points }) => line(points))
+          .attr("marker-end", "url(#arrow)"),
+      );
+  }
+
+  updateVis();
 }

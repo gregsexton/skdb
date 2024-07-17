@@ -28,12 +28,12 @@
     border-width: 1px;
     border-color: var(--kv_gray6);
     border-style: solid;
+    overflow: auto;
 }
 
 #key_vis #nodes .node {
-    padding: 0;
-    /* background-color: var(--kv_gray6); */
-    overflow: auto;
+    background-color: var(--kv_green_l);
+    height: 100%;
 }
 
 #key_vis #nodes .node .dir {
