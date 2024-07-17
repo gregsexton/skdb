@@ -84,7 +84,7 @@ function createVis() {
   const svg = d3.select("#key_vis");
   const dag = buildDataModel(getData());
 
-  const [nodeW, nodeH] = [300, 200];
+  const [nodeW, nodeH] = [500, 200];
   const layout = d3dag.sugiyama().nodeSize([nodeW, nodeH]).gap([50, 50]);
   layout(dag);
 
@@ -110,7 +110,7 @@ function createVis() {
     .join((enter) =>
       enter
         .append("g")
-        .attr("transform", ({ x, y }) => `translate(${x}, ${y})`)
+        .attr("transform", ({ x, y }) => `translate(${x+5}, ${y+5})`)
         .call((enter) => {
           const div = enter
             .append("foreignObject")
@@ -131,7 +131,7 @@ function createVis() {
         }),
     );
 
-  const line = d3.line();
+  const line = d3.line().curve(d3.curveBumpY);
   svg
     .select("#links")
     .selectAll("path")
@@ -142,4 +142,6 @@ function createVis() {
         .attr("d", ({ points }) => line(points))
         .attr("marker-end", "url(#arrow)"),
     );
+
+  // TODO: center on the root node's x,y
 }

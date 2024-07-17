@@ -1,31 +1,3 @@
-/* d5bbb1 beige */
-/* d5c5bf */
-
-/* 242f40 blue */
-/* 3e4a5d */
-
-/* 9cc4b2 green */
-/* aec7bb */
-/* c98ca7 pink */
-/* c9a3b4 */
-
-/* e76d83 red */
-/* db909e */
-
-/* grays */
-/*
-eeeeee
-dddddd
-cccccc
-bbbbbb
-9a9a9a
-666666
-333333
-000000
-*/
-
-/* TODO: variables for colors */
-
 :root {
     --kv_beige: #d5bbb1;
     --kv_beige_l: #d5c5bf;
@@ -52,10 +24,15 @@ bbbbbb
     --kv_gray7: #000000;
 }
 
+#key_vis #nodes foreignObject {
+    border-width: 1px;
+    border-color: var(--kv_gray6);
+    border-style: solid;
+}
+
 #key_vis #nodes .node {
-    padding: 0.1em;
-    background-color: var(--kv_gray6);
-    height: 100%;
+    padding: 0;
+    /* background-color: var(--kv_gray6); */
     overflow: auto;
 }
 
@@ -81,10 +58,12 @@ bbbbbb
 
 #key_vis #links path {
     stroke: var(--kv_green);
-    fill: var(--kv_green);
+    fill: none;
     stroke-width: 6;
 }
 
 #key_vis .arrowHead {
     fill: var(--kv_green);
+    stroke: var(--kv_gray0);
+    stroke-width: .2;
 }
