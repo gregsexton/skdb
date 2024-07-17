@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import * as d3dag from "d3-dag";
 import { useEffect } from "react";
+import "./KeyVis.css";
 
 import data from "../../../gds/log/insight.json?raw";
 
@@ -10,9 +11,8 @@ export function KeyVisualisation() {
   });
   return (
     <svg id="key_vis" width="100%" height="100%">
-      <g id="nodes"></g>
       <g id="links"></g>
-      <g id="arrows"></g>
+      <g id="nodes"></g>
     </svg>
   );
 }
@@ -84,12 +84,24 @@ function createVis() {
   const svg = d3.select("#key_vis");
   const dag = buildDataModel(getData());
 
-  const nodesize = 5;
-  const layout = d3dag
-    .sugiyama()
-    .nodeSize([nodesize, nodesize])
-    .gap([400, 100]);
+  const [nodeW, nodeH] = [300, 200];
+  const layout = d3dag.sugiyama().nodeSize([nodeW, nodeH]).gap([50, 50]);
   layout(dag);
+
+  const defs = svg.append("defs");
+
+  defs
+    .append("marker")
+    .attr("id", "arrow")
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 5)
+    .attr("refY", 0)
+    .attr("markerWidth", 8)
+    .attr("markerHeight", 8)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,-5L10,0L0,5")
+    .attr("class", "arrowHead");
 
   svg
     .select("#nodes")
@@ -99,10 +111,23 @@ function createVis() {
       enter
         .append("g")
         .attr("transform", ({ x, y }) => `translate(${x}, ${y})`)
-        .attr("opacity", 1)
         .call((enter) => {
-          // enter.append("circle").attr("r", nodesize);
-          enter.append("text").text((d) => d.data.id);
+          const div = enter
+            .append("foreignObject")
+            .attr("width", nodeW)
+            .attr("height", nodeH)
+            .append("xhtml:div")
+            .attr("class", "node");
+          div
+            .append("pre")
+            .attr("class", "dir")
+            .append("code")
+            .text((d) => d.data.dir);
+          div
+            .append("pre")
+            .attr("class", "key")
+            .append("code")
+            .text((d) => d.data.key);
         }),
     );
 
@@ -117,33 +142,7 @@ function createVis() {
         .attr("d", ({ points }) => line(points))
         .attr("fill", "none")
         .attr("stroke-width", 2)
-        .attr("stroke", "black"),
-    );
-
-  const arrowSize = 50;
-  const arrow = d3.symbol().type(d3.symbolTriangle).size(arrowSize);
-  function arrowTransform({
-    points,
-  }: {
-    points: readonly (readonly [number, number])[];
-  }): string {
-    const [[x1, y1], [x2, y2]] = points.slice(-2);
-    const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI + 90;
-    return `translate(${x2}, ${y2}) rotate(${angle})`;
-  }
-
-  svg
-    .select("#arrows")
-    .selectAll("path")
-    .data(dag.links())
-    .join(
-      (enter) =>
-        enter
-          .append("path")
-          .attr("d", arrow)
-          .attr("fill", "black")
-          .attr("transform", arrowTransform)
-          .attr("stroke", "black")
-          .attr("stroke-width", 1)
+        .attr("stroke", "black")
+        .attr("marker-end", "url(#arrow)"),
     );
 }

@@ -1,0 +1,55 @@
+/* d5bbb1 beige */
+/* d5c5bf */
+
+/* 242f40 blue */
+/* 3e4a5d */
+
+/* 9cc4b2 green */
+/* aec7bb */
+
+/* c98ca7 pink */
+/* c9a3b4 */
+
+/* e76d83 red */
+/* db909e */
+
+/* grays */
+/*
+eeeeee
+dddddd
+cccccc
+bbbbbb
+9a9a9a
+666666
+333333
+000000
+*/
+
+/* TODO: variables for colors */
+
+#key_vis #nodes .node {
+    padding: 0.1em;
+    background-color: #333333;
+    height: 100%;
+    overflow: auto;
+}
+
+#key_vis #nodes .node .dir {
+    padding-left: 1em;
+    background-color: #3e4a5d;
+    color: #eeeeee;
+    margin: 0em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    overflow: auto;
+}
+
+#key_vis #nodes .node .key {
+    padding-left: 1em;
+    background-color: #d5c5bf;
+    color: #333333;
+    margin: 0em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    overflow: auto;
+}
