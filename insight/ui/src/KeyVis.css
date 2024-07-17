@@ -6,7 +6,6 @@
 
 /* 9cc4b2 green */
 /* aec7bb */
-
 /* c98ca7 pink */
 /* c9a3b4 */
 
@@ -27,17 +26,43 @@ bbbbbb
 
 /* TODO: variables for colors */
 
+:root {
+    --kv_beige: #d5bbb1;
+    --kv_beige_l: #d5c5bf;
+
+    --kv_blue: #242f40;
+    --kv_blue_l: #3e4a5d;
+
+    --kv_green: #9cc4b2;
+    --kv_green_l: #aec7bb;
+
+    --kv_pink: #c98ca7;
+    --kv_pink_l: #c9a3b4;
+
+    --kv_red: #e76d83;
+    --kv_red_l: #db909e;
+
+    --kv_gray0: #eeeeee;
+    --kv_gray1: #dddddd;
+    --kv_gray2: #cccccc;
+    --kv_gray3: #bbbbbb;
+    --kv_gray4: #9a9a9a;
+    --kv_gray5: #666666;
+    --kv_gray6: #333333;
+    --kv_gray7: #000000;
+}
+
 #key_vis #nodes .node {
     padding: 0.1em;
-    background-color: #333333;
+    background-color: var(--kv_gray6);
     height: 100%;
     overflow: auto;
 }
 
 #key_vis #nodes .node .dir {
     padding-left: 1em;
-    background-color: #3e4a5d;
-    color: #eeeeee;
+    background-color: var(--kv_blue);
+    color: var(--kv_gray0);
     margin: 0em;
     padding-top: 1em;
     padding-bottom: 1em;
@@ -46,10 +71,20 @@ bbbbbb
 
 #key_vis #nodes .node .key {
     padding-left: 1em;
-    background-color: #d5c5bf;
-    color: #333333;
+    background-color: var(--kv_beige);
+    color: var(--kv_gray6);
     margin: 0em;
     padding-top: 1em;
     padding-bottom: 1em;
     overflow: auto;
+}
+
+#key_vis #links path {
+    stroke: var(--kv_green);
+    fill: var(--kv_green);
+    stroke-width: 6;
+}
+
+#key_vis .arrowHead {
+    fill: var(--kv_green);
 }

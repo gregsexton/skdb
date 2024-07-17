@@ -96,8 +96,8 @@ function createVis() {
     .attr("viewBox", "0 -5 10 10")
     .attr("refX", 5)
     .attr("refY", 0)
-    .attr("markerWidth", 8)
-    .attr("markerHeight", 8)
+    .attr("markerWidth", 4)
+    .attr("markerHeight", 4)
     .attr("orient", "auto")
     .append("path")
     .attr("d", "M0,-5L10,0L0,5")
@@ -140,9 +140,6 @@ function createVis() {
       enter
         .append("path")
         .attr("d", ({ points }) => line(points))
-        .attr("fill", "none")
-        .attr("stroke-width", 2)
-        .attr("stroke", "black")
         .attr("marker-end", "url(#arrow)"),
     );
 }
