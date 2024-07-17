@@ -31,9 +31,9 @@ interface Source {
   contributions: Contribution[];
 }
 
-interface SourceLink {
-  source: number;
-  target: number;
+interface GraphNode {
+  id: string;
+  parentIds: string[];
 }
 
 function srcId(src: Source) {
@@ -46,12 +46,11 @@ function getData(): Source {
 }
 
 function buildDataModel(src: Source) {
-  const nodes: Source[] = [];
-  const links: SourceLink[] = [];
+  const nodes: (Source & GraphNode)[] = [];
 
   const nodeIdx = new Map();
 
-  function walk(src: Source, target: number | undefined = undefined) {
+  function walk(src: Source) {
     const id = srcId(src);
 
     let idx = nodeIdx.get(id);
@@ -68,17 +67,10 @@ function buildDataModel(src: Source) {
       });
     }
 
-    const node = nodes[idx];
-
-    if (target !== undefined) {
-      const link = { source: idx, target: target };
-      links.push(link);
-    }
-
     for (const c of src.contributions ?? []) {
       // TODO: add data about contribution to edge
       if (!src.dir_is_input) {
-        walk(c.source, idx);
+        walk(c.source);
       }
     }
   }
@@ -90,58 +82,7 @@ function buildDataModel(src: Source) {
 
 function createVis() {
   const svg = d3.select("#key_vis");
-
-  const width = parseInt(svg.style("width").replace("px", ""));
-  const height = parseInt(svg.style("height").replace("px", ""));
-
   const dag = buildDataModel(getData());
-
-  function updateLinks() {
-    svg
-      .selectAll("line")
-      .data(dag.links())
-      .join("line")
-      .attr("stroke", "#000000")
-      .attr("x1", function (d) {
-        return d.source.x;
-      })
-      .attr("y1", function (d) {
-        return d.source.y;
-      })
-      .attr("x2", function (d) {
-        return d.target.x;
-      })
-      .attr("y2", function (d) {
-        return d.target.y;
-      });
-  }
-
-  function updateNodes() {
-    svg
-      .selectAll("text")
-      .data(dag.nodes())
-      .join("text")
-      .text(function (d) {
-        return d.dir;
-      })
-      .attr("x", function (d) {
-        return d.x;
-      })
-      .attr("y", function (d) {
-        return d.y;
-      })
-      .attr("dx", function (d) {
-        return 50;
-      })
-      .attr("dy", function (d) {
-        return 50;
-      });
-  }
-
-  function drawVis() {
-    updateLinks();
-    updateNodes();
-  }
 
   const nodesize = 5;
   const layout = d3dag
@@ -150,8 +91,6 @@ function createVis() {
     .gap([400, 100]);
   layout(dag);
 
-  // render nodes
-  // TODO: do this in their own group
   svg
     .select("#nodes")
     .selectAll("g")
@@ -182,7 +121,6 @@ function createVis() {
     );
 
   const arrowSize = 50;
-  const arrowLen = Math.sqrt((4 * arrowSize) / Math.sqrt(3));
   const arrow = d3.symbol().type(d3.symbolTriangle).size(arrowSize);
   function arrowTransform({
     points,
@@ -206,8 +144,6 @@ function createVis() {
           .attr("fill", "black")
           .attr("transform", arrowTransform)
           .attr("stroke", "black")
-          .attr("stroke-width", 1),
-      // use this to put a white boundary on the tip of the arrow
-      // .attr("stroke-dasharray", `${arrowLen},${arrowLen}`)
+          .attr("stroke-width", 1)
     );
 }
