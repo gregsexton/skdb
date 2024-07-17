@@ -10,7 +10,9 @@ export function KeyVisualisation() {
   });
   return (
     <svg id="key_vis" width="100%" height="100%">
-      <g id="key_vis_group"></g>
+      <g id="nodes"></g>
+      <g id="links"></g>
+      <g id="arrows"></g>
     </svg>
   );
 }
@@ -35,7 +37,8 @@ interface SourceLink {
 }
 
 function srcId(src: Source) {
-  return src.dir + "/" + src.key;
+  const sep = src.dir.endsWith("/") ? "" : "/";
+  return src.dir + sep + src.key;
 }
 
 function getData(): Source {
@@ -56,7 +59,13 @@ function buildDataModel(src: Source) {
     if (idx === undefined) {
       idx = nodes.length;
       nodeIdx.set(id, idx);
-      nodes.push({ ...src, id, parentIds: [] });
+      nodes.push({
+        ...src,
+        id,
+        parentIds: src.dir_is_input
+          ? []
+          : src.contributions.map((c) => srcId(c.source)),
+      });
     }
 
     const node = nodes[idx];
@@ -64,7 +73,6 @@ function buildDataModel(src: Source) {
     if (target !== undefined) {
       const link = { source: idx, target: target };
       links.push(link);
-      node.parentIds.push(nodes[target].id);
     }
 
     for (const c of src.contributions ?? []) {
@@ -145,6 +153,7 @@ function createVis() {
   // render nodes
   // TODO: do this in their own group
   svg
+    .select("#nodes")
     .selectAll("g")
     .data(dag.nodes())
     .join((enter) =>
@@ -153,10 +162,52 @@ function createVis() {
         .attr("transform", ({ x, y }) => `translate(${x}, ${y})`)
         .attr("opacity", 1)
         .call((enter) => {
-          enter.append("circle").attr("r", nodesize);
-          enter
-            .append("text")
-            .text((d) => d.data.id.slice(0, 50));
+          // enter.append("circle").attr("r", nodesize);
+          enter.append("text").text((d) => d.data.id);
         }),
+    );
+
+  const line = d3.line();
+  svg
+    .select("#links")
+    .selectAll("path")
+    .data(dag.links())
+    .join((enter) =>
+      enter
+        .append("path")
+        .attr("d", ({ points }) => line(points))
+        .attr("fill", "none")
+        .attr("stroke-width", 2)
+        .attr("stroke", "black"),
+    );
+
+  const arrowSize = 50;
+  const arrowLen = Math.sqrt((4 * arrowSize) / Math.sqrt(3));
+  const arrow = d3.symbol().type(d3.symbolTriangle).size(arrowSize);
+  function arrowTransform({
+    points,
+  }: {
+    points: readonly (readonly [number, number])[];
+  }): string {
+    const [[x1, y1], [x2, y2]] = points.slice(-2);
+    const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI + 90;
+    return `translate(${x2}, ${y2}) rotate(${angle})`;
+  }
+
+  svg
+    .select("#arrows")
+    .selectAll("path")
+    .data(dag.links())
+    .join(
+      (enter) =>
+        enter
+          .append("path")
+          .attr("d", arrow)
+          .attr("fill", "black")
+          .attr("transform", arrowTransform)
+          .attr("stroke", "black")
+          .attr("stroke-width", 1),
+      // use this to put a white boundary on the tip of the arrow
+      // .attr("stroke-dasharray", `${arrowLen},${arrowLen}`)
     );
 }
