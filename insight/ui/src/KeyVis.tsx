@@ -166,16 +166,10 @@ function createVis() {
       }
     };
     const subject = (e) => {
-      let closest = null;
-      let distance = Infinity;
-      for (const n of nodes) {
-        let d = Math.hypot(e.x - (n.x + nodeW / 2), e.y - (n.y + nodeH / 2));
-        if (d < distance) {
-          distance = d;
-          closest = n;
-        }
-      }
-      return closest;
+      return nodes.findLast(
+        (n) =>
+          e.x >= n.x && e.x <= n.x + nodeW && e.y >= n.y && e.y <= n.y + nodeH,
+      );
     };
     const move = (e) => {
       e.subject.x = e.x;
