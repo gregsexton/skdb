@@ -1,9 +1,9 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { createLocalDbConnectedTo, skdbDevServerDb } from 'skdb-dev';
-import { SKDBDevConsoleProvider } from 'skdb-react';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
+import { createLocalDbConnectedTo, skdbDevServerDb } from "skdb-dev";
+import { SKDBDevConsoleProvider } from "skdb-react";
 
 async function init() {
   const remoteDb = await skdbDevServerDb("example");
@@ -15,15 +15,14 @@ async function init() {
   const connect = async (accessKey: string = "root") => {
     const localDb = await createLocalDbConnectedTo(remoteDb, accessKey);
 
-    await localDb.mirror(
-      {
-        table: "example",
-        expectedColumns: "(id TEXT PRIMARY KEY, intCol INTEGER NOT NULL, floatCol FLOAT NOT NULL, skdb_access TEXT NOT NULL)"
-      },
-    );
+    await localDb.mirror({
+      table: "example",
+      expectedColumns:
+        "(id TEXT PRIMARY KEY, intCol INTEGER NOT NULL, floatCol FLOAT NOT NULL, skdb_access TEXT NOT NULL)",
+    });
 
     return localDb;
-  }
+  };
 
   return connect;
 }
@@ -39,8 +38,4 @@ async function init() {
 //     );
 //   });
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+ReactDOM.createRoot(document.getElementById("root")!).render(<App />);

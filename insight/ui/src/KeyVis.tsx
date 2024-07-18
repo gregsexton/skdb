@@ -107,7 +107,9 @@ function createVis() {
 
   const line = d3.line().curve(d3.curveBumpY);
 
-  function updateVis() {
+  let tf = d3.zoomIdentity;
+
+  const updateVis = () => {
     svg
       .select("#nodes")
       .selectAll("foreignObject")
@@ -121,9 +123,26 @@ function createVis() {
             .append("xhtml:div")
             .attr("class", "node");
 
+          const move = (e, d) => {
+            d.x += e.dx / tf.k;
+            d.y += e.dy / tf.k;
+            // update position for any links
+            for (const link of dag.links()) {
+              link.points[0] = [link.source.x, link.source.y];
+              link.points[1] = [link.target.x, link.target.y];
+            }
+          };
+
           div
             .append("div")
             .append("pre")
+            .call(
+              d3
+                .drag()
+                .container(div)
+                .on("drag", move)
+                .on("start.render drag.render end.render", updateVis),
+            )
             .attr("class", "dir")
             .append("code")
             .text((d) => d.data.dir);
@@ -139,7 +158,8 @@ function createVis() {
         (update) => update,
         (exit) => exit.remove(),
       )
-      .attr("transform", ({ x, y }) => `translate(${x + 5}, ${y + 5})`);
+      .attr("x", ({ x }) => x)
+      .attr("y", ({ y }) => y);
 
     svg
       .select("#links")
@@ -154,36 +174,15 @@ function createVis() {
         (update) => update.attr("d", (link) => line(link.points)),
         (exit) => exit.remove(),
       );
-  }
+  };
+
+  const zoom = d3.zoom().on("zoom", (e) => {
+    tf = e.transform;
+    svg.selectAll("g").attr("transform", e.transform);
+  });
+
+  svg.call(zoom);
 
   updateVis();
-
-  const drag = (nodes, links) => {
-    const updateLinks = () => {
-      for (const link of links) {
-        link.points[0] = [link.source.x, link.source.y];
-        link.points[1] = [link.target.x, link.target.y];
-      }
-    };
-    const subject = (e) => {
-      return nodes.findLast(
-        (n) =>
-          e.x >= n.x && e.x <= n.x + nodeW && e.y >= n.y && e.y <= n.y + nodeH,
-      );
-    };
-    const move = (e) => {
-      e.subject.x = e.x;
-      e.subject.y = e.y;
-      updateLinks();
-    };
-    return d3.drag().subject(subject).on("drag", move);
-  };
-  svg.call(
-    drag([...dag.nodes()], [...dag.links()]).on(
-      "start.render drag.render end.render",
-      updateVis,
-    ),
-  );
+  updateVis(); // TODO: why do I need to call this twice?! something is async perhaps?
 }
-
-// TODO: need to be able to select text and work with the node; need to be able to pan
