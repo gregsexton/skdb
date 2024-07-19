@@ -103,8 +103,6 @@ function createVis() {
     .attr("d", "M0,-5L10,0L0,5")
     .attr("class", "arrowHead");
 
-  // TODO: center on the root node's x,y
-
   const line = d3.line().curve(d3.curveBumpY);
 
   let tf = d3.zoomIdentity;
@@ -113,6 +111,7 @@ function createVis() {
     svg
       .select("#nodes")
       .selectAll("foreignObject")
+      //@ts-ignore
       .data(dag.nodes(), (n) => n.data.id)
       .join(
         (enter) => {
@@ -123,7 +122,7 @@ function createVis() {
             .append("xhtml:div")
             .attr("class", "node");
 
-          const move = (e, d) => {
+          const move = (e: any, d: any) => {
             d.x += e.dx / tf.k;
             d.y += e.dy / tf.k;
             // update position for any links
@@ -146,8 +145,10 @@ function createVis() {
             });
 
           div.call(
+            //@ts-ignore
             d3
               .drag()
+              //@ts-ignore
               .container(div)
               .filter(
                 (e) =>
@@ -206,6 +207,7 @@ function createVis() {
       svg.selectAll("g").attr("transform", e.transform);
     });
 
+  //@ts-ignore
   svg.call(zoom);
 
   svg
