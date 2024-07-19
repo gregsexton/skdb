@@ -39,6 +39,10 @@
     box-sizing: border-box;
 }
 
+#key_vis #nodes .highlighted {
+    background-color: var(--kv_pink);
+}
+
 #key_vis #nodes .node .dir {
     padding-left: 1em;
     background-color: var(--kv_blue);
@@ -51,6 +55,17 @@
 
 #key_vis #nodes .node .key {
     padding-left: 1em;
+    background-color: var(--kv_blue_l);
+    color: var(--kv_gray2);
+    margin: 0em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    overflow: auto;
+    border-bottom: 1px solid var(--kv_gray6);
+}
+
+#key_vis #nodes .node .tick {
+    padding-left: 1em;
     background-color: var(--kv_beige);
     color: var(--kv_gray6);
     margin: 0em;
@@ -59,14 +74,35 @@
     overflow: auto;
 }
 
+#key_vis #nodes .node .file {
+    padding-left: 1em;
+    background-color: var(--kv_beige);
+    color: var(--kv_gray6);
+    margin: 0em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    overflow: auto;
+    border-bottom: 1px solid var(--kv_gray6);
+}
+
 #key_vis #links path {
     stroke: var(--kv_green);
     fill: none;
     stroke-width: 6;
 }
 
+#key_vis #links path.highlighted {
+    stroke: var(--kv_pink);
+}
+
 #key_vis .arrowHead {
     fill: var(--kv_green);
+    stroke: var(--kv_gray0);
+    stroke-width: .2;
+}
+
+#key_vis .arrowHeadHighlighted {
+    fill: var(--kv_pink);
     stroke: var(--kv_gray0);
     stroke-width: .2;
 }

@@ -21,7 +21,7 @@ interface Contribution {
   tick: number;
   writer: string;
   files: string[];
-  source: Source;
+  source?: Source;
 }
 
 interface Source {
@@ -29,9 +29,6 @@ interface Source {
   key: string;
   dir_is_input: boolean;
   contributions: Contribution[];
-}
-
-interface GraphNode {
   id: string;
   parentIds: string[];
 }
@@ -46,7 +43,7 @@ function getData(): Source {
 }
 
 function buildDataModel(src: Source) {
-  const nodes: (Source & GraphNode)[] = [];
+  const nodes: Source[] = [];
 
   const nodeIdx = new Map();
 
@@ -58,19 +55,17 @@ function buildDataModel(src: Source) {
     if (idx === undefined) {
       idx = nodes.length;
       nodeIdx.set(id, idx);
-      nodes.push({
-        ...src,
-        id,
-        parentIds: src.dir_is_input
-          ? []
-          : src.contributions.map((c) => srcId(c.source)),
-      });
+      src.id = id;
+      src.parentIds = src.dir_is_input
+        ? []
+        : src.contributions.map((c) => srcId(c.source!));
+      nodes.push(src);
     }
 
     for (const c of src.contributions ?? []) {
       // TODO: add data about contribution to edge
       if (!src.dir_is_input) {
-        walk(c.source);
+        walk(c.source!);
       }
     }
   }
@@ -103,9 +98,24 @@ function createVis() {
     .attr("d", "M0,-5L10,0L0,5")
     .attr("class", "arrowHead");
 
+  defs
+    .append("marker")
+    .attr("id", "arrow-highlighted")
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 5)
+    .attr("refY", 0)
+    .attr("markerWidth", 4)
+    .attr("markerHeight", 4)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,-5L10,0L0,5")
+    .attr("class", "arrowHeadHighlighted");
+
   const line = d3.line().curve(d3.curveBumpY);
 
   let tf = d3.zoomIdentity;
+
+  const highlightedSourceIds = new Set<String>();
 
   const updateVis = () => {
     svg
@@ -120,7 +130,8 @@ function createVis() {
             .attr("width", nodeW)
             .attr("height", nodeH)
             .append("xhtml:div")
-            .attr("class", "node");
+            .attr("class", "node")
+            .classed("highlighted", (d) => highlightedSourceIds.has(d.data.id));
 
           const move = (e: any, d: any) => {
             d.x += e.dx / tf.k;
@@ -171,9 +182,56 @@ function createVis() {
             .append("code")
             .text((d) => d.data.key);
 
+          div
+            .append("div")
+            .selectAll("div")
+            .data((d) => d.data.contributions)
+            .join((enter) => {
+              const div = enter.append("div").attr("class", "contributions");
+
+              div.on("mouseout", () => {
+                highlightedSourceIds.clear();
+                updateVis();
+              });
+              div.on("mouseover", (_e, d) => {
+                if (d.source) {
+                  highlightedSourceIds.add(d.source.id);
+                  updateVis();
+                }
+              });
+
+              div
+                .append("pre")
+                .attr("class", "tick")
+                .append("code")
+                .text((d) => d.tick);
+
+              // div.append("p").text((d) => d.writer);
+
+              div
+                .append("div")
+                .selectAll("pre")
+                .data((d) => d.files)
+                .join((enter) => {
+                  return enter
+                    .append("pre")
+                    .attr("class", "file")
+                    .append("code");
+                })
+                .text((d) => d);
+
+              return div;
+            });
+
           return div;
         },
-        (update) => update,
+        (update) => {
+          update
+            .select("div.node")
+            .attr("class", "node")
+            .classed("highlighted", (d) => highlightedSourceIds.has(d.data.id));
+          return update;
+        },
         (exit) => exit.remove(),
       )
       .attr("x", ({ x }) => x)
@@ -188,8 +246,22 @@ function createVis() {
           enter
             .append("path")
             .attr("d", (link) => line(link.points))
-            .attr("marker-end", "url(#arrow)"),
-        (update) => update.attr("d", (link) => line(link.points)),
+            .attr("marker-end", (d) =>
+              highlightedSourceIds.has(d.source.data.id)
+                ? "url(#arrow-highlighted)"
+                : "url(#arrow)",
+            ),
+        (update) =>
+          update
+            .attr("d", (link) => line(link.points))
+            .attr("marker-end", (d) =>
+              highlightedSourceIds.has(d.source.data.id)
+                ? "url(#arrow-highlighted)"
+                : "url(#arrow)",
+            )
+            .classed("highlighted", (d) =>
+              highlightedSourceIds.has(d.source.data.id),
+            ),
         (exit) => exit.remove(),
       );
   };
