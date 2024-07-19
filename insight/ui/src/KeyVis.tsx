@@ -138,8 +138,11 @@ function createVis() {
             d.y += e.dy / tf.k;
             // update position for any links
             for (const link of dag.links()) {
-              link.points[0] = [link.source.x + nodeW/2, link.source.y + nodeH];
-              link.points[1] = [link.target.x + nodeW/2, link.target.y];
+              link.points[0] = [
+                link.source.x + nodeW / 2,
+                link.source.y + nodeH,
+              ];
+              link.points[1] = [link.target.x + nodeW / 2, link.target.y];
             }
           };
 
@@ -306,4 +309,10 @@ function createVis() {
 
   updateVis();
   updateVis(); // TODO: why do I need to call this twice?! something is async perhaps?
+
+  const leafNode = dag.leaves().next().value;
+  const leafMid = [-(leafNode.x + nodeW / 2), -(leafNode.y + nodeH / 2)];
+  const width = parseInt(svg.style("width").replace("px", ""));
+  const height = parseInt(svg.style("height").replace("px", ""));
+  zoom.translateTo(svg, -width / 2, -height / 2, leafMid);
 }
