@@ -11,8 +11,8 @@ export function KeyVisualisation() {
   });
   return (
     <svg id="key_vis" width="100%" height="100%">
-      <g id="links"></g>
       <g id="nodes"></g>
+      <g id="links"></g>
     </svg>
   );
 }
@@ -138,8 +138,8 @@ function createVis() {
             d.y += e.dy / tf.k;
             // update position for any links
             for (const link of dag.links()) {
-              link.points[0] = [link.source.x, link.source.y];
-              link.points[1] = [link.target.x, link.target.y];
+              link.points[0] = [link.source.x + nodeW/2, link.source.y + nodeH];
+              link.points[1] = [link.target.x + nodeW/2, link.target.y];
             }
           };
 
@@ -242,17 +242,26 @@ function createVis() {
       .selectAll("path")
       .data(dag.links())
       .join(
-        (enter) =>
-          enter
+        (enter) => {
+          return enter
             .append("path")
-            .attr("d", (link) => line(link.points))
+            .attr("d", (link) => {
+              const [[x0, y0], [x1, y1]] = link.points;
+              const points: [number, number][] = [
+                [x0 + nodeW / 2, y0 + nodeH],
+                [x1 + nodeW / 2, y1],
+              ];
+              link.points = points;
+              return line(points);
+            })
             .attr("marker-end", (d) =>
               highlightedSourceIds.has(d.source.data.id)
                 ? "url(#arrow-highlighted)"
                 : "url(#arrow)",
-            ),
-        (update) =>
-          update
+            );
+        },
+        (update) => {
+          return update
             .attr("d", (link) => line(link.points))
             .attr("marker-end", (d) =>
               highlightedSourceIds.has(d.source.data.id)
@@ -261,7 +270,8 @@ function createVis() {
             )
             .classed("highlighted", (d) =>
               highlightedSourceIds.has(d.source.data.id),
-            ),
+            );
+        },
         (exit) => exit.remove(),
       );
   };

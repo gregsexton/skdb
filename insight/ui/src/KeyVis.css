@@ -97,12 +97,12 @@
 
 #key_vis .arrowHead {
     fill: var(--kv_green);
-    stroke: var(--kv_gray0);
-    stroke-width: .2;
+    stroke: var(--kv_gray5);
+    stroke-width: .3;
 }
 
 #key_vis .arrowHeadHighlighted {
     fill: var(--kv_pink);
-    stroke: var(--kv_gray0);
-    stroke-width: .2;
+    stroke: var(--kv_gray2);
+    stroke-width: .3;
 }
