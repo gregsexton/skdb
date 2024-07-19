@@ -84,8 +84,8 @@ function createVis() {
   const svg = d3.select("#key_vis");
   const dag = buildDataModel(getData());
 
-  const [nodeW, nodeH] = [500, 200];
-  const layout = d3dag.sugiyama().nodeSize([nodeW, nodeH]).gap([50, 50]);
+  const [nodeW, nodeH] = [900, 600];
+  const layout = d3dag.sugiyama().nodeSize([nodeW, nodeH]).gap([150, 100]);
   layout(dag);
 
   const defs = svg.append("defs");
@@ -134,15 +134,32 @@ function createVis() {
           };
 
           div
+            .on("mouseover", (e) => {
+              if (div.nodes().includes(e.target)) {
+                d3.select(e.target).style("cursor", "move");
+              }
+            })
+            .on("mouseout", (e) => {
+              if (div.nodes().includes(e.target)) {
+                d3.select(e.target).style("cursor", "auto");
+              }
+            });
+
+          div.call(
+            d3
+              .drag()
+              .container(div)
+              .filter(
+                (e) =>
+                  !e.ctrlKey && !e.button && div.nodes().includes(e.target),
+              )
+              .on("drag", move)
+              .on("start.render drag.render end.render", updateVis),
+          );
+
+          div
             .append("div")
             .append("pre")
-            .call(
-              d3
-                .drag()
-                .container(div)
-                .on("drag", move)
-                .on("start.render drag.render end.render", updateVis),
-            )
             .attr("class", "dir")
             .append("code")
             .text((d) => d.data.dir);
@@ -176,12 +193,32 @@ function createVis() {
       );
   };
 
-  const zoom = d3.zoom().on("zoom", (e) => {
-    tf = e.transform;
-    svg.selectAll("g").attr("transform", e.transform);
-  });
+  const zoom = d3
+    .zoom()
+    .filter(
+      (e) =>
+        (!e.ctrlKey || e.type === "wheel") &&
+        !e.button &&
+        e.target === svg.node(),
+    )
+    .on("zoom", (e) => {
+      tf = e.transform;
+      svg.selectAll("g").attr("transform", e.transform);
+    });
 
   svg.call(zoom);
+
+  svg
+    .on("mouseover", (e) => {
+      if (svg.node() === e.target) {
+        d3.select(e.target).style("cursor", "move");
+      }
+    })
+    .on("mouseout", (e) => {
+      if (svg.node() === e.target) {
+        d3.select(e.target).style("cursor", "auto");
+      }
+    });
 
   updateVis();
   updateVis(); // TODO: why do I need to call this twice?! something is async perhaps?

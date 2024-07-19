@@ -29,11 +29,14 @@
     border-color: var(--kv_gray6);
     border-style: solid;
     overflow: auto;
+    background-color: var(--kv_green_l);
 }
 
 #key_vis #nodes .node {
     background-color: var(--kv_green_l);
+    padding-top: 1em;
     height: 100%;
+    box-sizing: border-box;
 }
 
 #key_vis #nodes .node .dir {
