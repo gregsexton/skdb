@@ -24,7 +24,7 @@
     --kv_gray7: #000000;
 }
 
-#key_vis #nodes foreignObject {
+#nodes foreignObject {
     border-width: 1px;
     border-color: var(--kv_gray6);
     border-style: solid;
@@ -32,18 +32,18 @@
     background-color: var(--kv_green_l);
 }
 
-#key_vis #nodes .node {
+#nodes .node {
     background-color: var(--kv_green_l);
     padding-top: 1em;
     height: 100%;
     box-sizing: border-box;
 }
 
-#key_vis #nodes .highlighted {
+#nodes .highlighted {
     background-color: var(--kv_pink);
 }
 
-#key_vis #nodes .node .dir {
+#nodes .node .dir {
     padding-left: 1em;
     background-color: var(--kv_blue);
     color: var(--kv_gray0);
@@ -53,7 +53,7 @@
     overflow: auto;
 }
 
-#key_vis #nodes .node .key {
+#nodes .node .key {
     padding-left: 1em;
     background-color: var(--kv_blue_l);
     color: var(--kv_gray2);
@@ -64,7 +64,7 @@
     border-bottom: 1px solid var(--kv_gray6);
 }
 
-#key_vis #nodes .node .tick {
+#nodes .node .tick {
     padding-left: 1em;
     background-color: var(--kv_beige);
     color: var(--kv_gray6);
@@ -74,7 +74,7 @@
     overflow: auto;
 }
 
-#key_vis #nodes .node .file {
+#nodes .node .file {
     padding-left: 1em;
     background-color: var(--kv_beige);
     color: var(--kv_gray6);
@@ -85,23 +85,23 @@
     border-bottom: 1px solid var(--kv_gray6);
 }
 
-#key_vis #links path {
+#links path {
     stroke: var(--kv_green);
     fill: none;
     stroke-width: 6;
 }
 
-#key_vis #links path.highlighted {
+#links path.highlighted {
     stroke: var(--kv_pink);
 }
 
-#key_vis .arrowHead {
+.arrowHead {
     fill: var(--kv_green);
     stroke: var(--kv_gray5);
     stroke-width: .3;
 }
 
-#key_vis .arrowHeadHighlighted {
+.arrowHeadHighlighted {
     fill: var(--kv_pink);
     stroke: var(--kv_gray2);
     stroke-width: .3;
