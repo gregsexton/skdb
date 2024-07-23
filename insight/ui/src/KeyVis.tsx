@@ -14,25 +14,36 @@ export function KeyVisualisation() {
   return <svg width="100%" height="100%" ref={svgRef}></svg>;
 }
 
+// TODO: make this a tagged object and include more data
+type File = string | (string | number)[];
+type Key = File;
+
 interface Contribution {
   tick: number;
   writer: string;
-  files: string[];
+  files: File[];
   source?: Source;
 }
 
 interface Source {
   dir: string;
-  key: string;
+  key: Key;
   dir_is_input: boolean;
   contributions: Contribution[];
   id: string;
   parentIds: string[];
 }
 
+function pprint(k: Key) {
+  if (typeof k === "string") {
+    return k;
+  }
+  return JSON.stringify(k);
+}
+
 function srcId(src: Source) {
   const sep = src.dir.endsWith("/") ? "" : "/";
-  return src.dir + sep + src.key;
+  return src.dir + sep + JSON.stringify(src.key);
 }
 
 function getData(): Source {
@@ -94,7 +105,7 @@ function createKeyVis(
         .append("pre")
         .attr("class", "key")
         .append("code")
-        .text((d) => d.data.key);
+        .text((d) => pprint(d.data.key));
 
       div
         .append("div")
@@ -115,21 +126,21 @@ function createKeyVis(
           });
 
           div
-            .append("pre")
-            .attr("class", "tick")
-            .append("code")
-            .text((d) => d.tick);
-
-          // div.append("p").text((d) => d.writer);
-
-          div
             .append("div")
             .selectAll("pre")
             .data((d) => d.files)
             .join((enter) => {
               return enter.append("pre").attr("class", "file").append("code");
             })
-            .text((d) => d);
+            .text((d) => pprint(d));
+
+          div
+            .append("pre")
+            .attr("class", "tick")
+            .append("code")
+            .text((d) => "Tick: " + d.tick);
+
+          // div.append("p").text((d) => d.writer);
 
           return div;
         });

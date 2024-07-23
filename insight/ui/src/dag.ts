@@ -46,9 +46,10 @@ export function createDagVis<Node, Edge>(
   ) => void,
 ) {
   const svg = d3.select(svgElem);
-  const links = svg.append("g").attr("id", "links");
   const nodes = svg.append("g").attr("id", "nodes");
+  const links = svg.append("g").attr("id", "links");
 
+  // TODO: extract these numbers to input params
   const [nodeW, nodeH] = [900, 600];
   const layout = d3dag.sugiyama().nodeSize([nodeW, nodeH]).gap([150, 100]);
   layout(dag);

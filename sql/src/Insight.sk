@@ -1,13 +1,5 @@
 module Insight;
 
-private fun jserialiseStr(x: String): JSON.String {
-  JSON.String(x)
-}
-
-private fun jserialiseInt(x: Int): JSON.Number {
-  JSON.IntNumber(x)
-}
-
 private fun jserialise<T>(x: T): JSON.String {
   ret = "";
   capture = (s) -> !ret = s;
@@ -17,6 +9,44 @@ private fun jserialise<T>(x: T): JSON.String {
   JSON.String(ret);
 }
 
+private fun jserialiseStr(x: String): JSON.String {
+  JSON.String(x)
+}
+
+private fun jserialiseInt(x: Int): JSON.Number {
+  JSON.IntNumber(x)
+}
+
+private fun jserialiseFloat(x: Float): JSON.Number {
+  JSON.FloatNumber(x)
+}
+
+private fun jserialiseKey(key: SKStore.Key): JSON.Value {
+  key match {
+  | k @ SKDB.RowKey _ -> jserialiseFile(k.row)
+  | k @ _ -> jserialise(k)
+  }
+}
+
+private fun jserialiseFile(file: SKStore.File): JSON.Value {
+  file match {
+  | SKDB.RowValues(values, _repeat) ->
+    JSON.Array::createFromIterator(
+      values.iterator().map(v ->
+        v match {
+        | None() -> JSON.Null()
+        | Some(SKDB.CInt(x)) -> jserialiseInt(x)
+        | Some(SKDB.CFloat(x)) -> jserialiseFloat(x)
+        | Some(SKDB.CString(s)) -> jserialiseStr(s)
+        | Some(SKDB.CJSON(_)) -> invariant_violation("TODO: map to JSON")
+        | Some(SKDB.CType _ ) -> invariant_violation("TODO: map to something")
+        }
+      ),
+    )
+  | _ -> jserialise(file)
+  }
+}
+
 private fun buildDepObject(
   context: mutable SKStore.Context,
   dirname: SKStore.DirName,
@@ -24,7 +54,7 @@ private fun buildDepObject(
 ): JSON.Object {
   obj = mutable Map<String, JSON.Value>[];
   obj!["dir"] = JSON.String(dirname.dirName);
-  obj!["key"] = jserialise(key);
+  obj!["key"] = jserialiseKey(key);
 
   dir = context.dirs.maybeGet(dirname) match {
   | None() -> invariant_violation(`could not find ${dirname}`)
@@ -45,16 +75,7 @@ private fun buildDepObject(
     contribution!["writer"] = jserialise(writer);
 
     contribution!["files"] = JSON.Array::createFromIterator(
-      files.iterator().map(file -> {
-        file match {
-        // | vals @ SKDB.RowValues _ ->
-        // does not work as intermediate tables don't necessarily get registered with fields
-        // if can't find fieldnames use csv? just use csv?
-        // fieldnames = SKStore.OJSON(SKDB.getFieldNames(context, dirname));
-        // JSON.String(vals.toStringSingle(fieldnames)) // TODO: should output a json array, not a string
-        | x -> jserialise(x)
-        }
-      }),
+      files.iterator().map(jserialiseFile),
     );
 
     if (!dir.input) {

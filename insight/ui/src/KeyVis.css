@@ -64,25 +64,28 @@
     border-bottom: 1px solid var(--kv_gray6);
 }
 
-#nodes .node .tick {
-    padding-left: 1em;
+#nodes .node .contributions {
     background-color: var(--kv_beige);
     color: var(--kv_gray6);
+    display: grid;
+    grid-template-columns: 9fr 1fr;
+    border-bottom: 1px solid var(--kv_gray6);
+}
+
+#nodes .node .contributions .tick {
+    padding-left: 1em;
     margin: 0em;
     padding-top: 1em;
     padding-bottom: 1em;
     overflow: auto;
 }
 
-#nodes .node .file {
+#nodes .node .contributions .file {
     padding-left: 1em;
-    background-color: var(--kv_beige);
-    color: var(--kv_gray6);
     margin: 0em;
     padding-top: 1em;
     padding-bottom: 1em;
     overflow: auto;
-    border-bottom: 1px solid var(--kv_gray6);
 }
 
 #links path {

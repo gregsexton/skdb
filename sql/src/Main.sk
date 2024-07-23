@@ -790,8 +790,7 @@ fun execInsight(args: Cli.ParseResults, options: SKDB.Options): void {
   SKDB.runSql(options, origContext ~> {
     context = origContext.mclone();
 
-    // dirInput = "/test_view_child/";
-    dirInput = "/test_view_join/";
+    dirInput = "/test_view/";
     _keyInput = ""; // TODO: parse to produce key
 
     dirname = SKStore.DirName::create(dirInput);
@@ -799,6 +798,7 @@ fun execInsight(args: Cli.ParseResults, options: SKDB.Options): void {
     //   SKDB.RowValues(Array[Some(SKDB.CInt(4))], 1),
     //   Array[(0, SQLParser.IASC(), SQLParser.INTEGER())],
     // );
+
     key = SKDB.RowKey(
       SKDB.RowValues(
         Array[
@@ -814,6 +814,20 @@ fun execInsight(args: Cli.ParseResults, options: SKDB.Options): void {
         (2, SQLParser.IASC(), SQLParser.TEXT()),
       ],
     );
+
+    // key = SKDB.RowKey(
+    //   SKDB.RowValues(
+    //     Array[
+    //       Some(SKDB.CInt(1)),
+    //       Some(SKDB.CInt(3)),
+    //     ],
+    //     1,
+    //   ),
+    //   Array[
+    //     (0, SQLParser.IASC(), SQLParser.INTEGER()),
+    //     (1, SQLParser.IASC(), SQLParser.INTEGER()),
+    //   ],
+    // );
 
     Insight.upstream(context, dirname, key);
 
