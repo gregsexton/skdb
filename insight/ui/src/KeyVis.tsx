@@ -97,22 +97,27 @@ function createKeyVis(
       div
         .append("div")
         .append("pre")
+        .text("Dir: ")
         .attr("class", "dir")
         .append("code")
         .text((d) => d.data.dir);
 
       div
         .append("pre")
+        .text("Key: ")
         .attr("class", "key")
         .append("code")
         .text((d) => pprint(d.data.key));
 
-      div
-        .append("div")
+      const contributions = div.append("div").attr("class", "contributions");
+
+      contributions.append("span").text("Files").attr("class", "heading");
+
+      contributions
         .selectAll("div")
         .data((d) => d.data.contributions)
         .join((enter) => {
-          const div = enter.append("div").attr("class", "contributions");
+          const div = enter.append("div").attr("class", "contribution");
 
           div.on("mouseout", () => {
             highlightedSourceIds.clear();

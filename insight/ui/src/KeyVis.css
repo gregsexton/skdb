@@ -24,6 +24,10 @@
     --kv_gray7: #000000;
 }
 
+svg {
+    background-color: var(--kv_green);
+}
+
 #nodes foreignObject {
     border-width: 1px;
     border-color: var(--kv_gray6);
@@ -33,24 +37,27 @@
 }
 
 #nodes .node {
-    background-color: var(--kv_green_l);
-    padding-top: 1em;
+    /* background-color: var(--kv_green_l); */
+    background-color: var(--kv_blue_l);
+    color: var(--kv_gray0);
     height: 100%;
     box-sizing: border-box;
 }
 
-#nodes .highlighted {
-    background-color: var(--kv_pink);
-}
-
 #nodes .node .dir {
-    padding-left: 1em;
     background-color: var(--kv_blue);
-    color: var(--kv_gray0);
-    margin: 0em;
+    padding-left: 1em;
+    margin-top: 0em;
     padding-top: 1em;
     padding-bottom: 1em;
     overflow: auto;
+    box-shadow: 0px 5px 5px 0.001px rgb(0 0 0 / 20%);
+    position:relative;
+    z-index:1;
+}
+
+#nodes .node.highlighted .dir {
+    background-color: var(--kv_red);
 }
 
 #nodes .node .key {
@@ -58,21 +65,39 @@
     background-color: var(--kv_blue_l);
     color: var(--kv_gray2);
     margin: 0em;
-    padding-top: 1em;
     padding-bottom: 1em;
     overflow: auto;
-    border-bottom: 1px solid var(--kv_gray6);
+    /* border-bottom: 1px solid var(--kv_blue); */
+    box-shadow: 0px 2px 3px 0.001px rgb(0 0 0 / 30%);
+    z-index:1;
+    position:relative;
 }
 
 #nodes .node .contributions {
     background-color: var(--kv_beige);
     color: var(--kv_gray6);
-    display: grid;
-    grid-template-columns: 9fr 1fr;
-    border-bottom: 1px solid var(--kv_gray6);
 }
 
-#nodes .node .contributions .tick {
+#nodes .node .contributions .heading {
+    padding-left: 1.5em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    font-family: monospace;
+    display: block;
+    position: relative;
+    z-index:1;
+    box-shadow: 0px 2px 3px 0.001px rgb(0 0 0 / 30%);
+}
+
+#nodes .node .contributions .contribution {
+    background-color: var(--kv_beige_l);
+    color: var(--kv_gray6);
+    display: grid;
+    grid-template-columns: 9fr 1fr;
+    border-bottom: 1px solid var(--kv_gray4);
+}
+
+#nodes .node .contributions .contribution .tick {
     padding-left: 1em;
     margin: 0em;
     padding-top: 1em;
@@ -80,8 +105,8 @@
     overflow: auto;
 }
 
-#nodes .node .contributions .file {
-    padding-left: 1em;
+#nodes .node .contributions .contribution .file {
+    padding-left: 2em;
     margin: 0em;
     padding-top: 1em;
     padding-bottom: 1em;
@@ -89,23 +114,23 @@
 }
 
 #links path {
-    stroke: var(--kv_green);
+    stroke: var(--kv_blue);
     fill: none;
     stroke-width: 6;
 }
 
 #links path.highlighted {
-    stroke: var(--kv_pink);
+    stroke: var(--kv_red);
 }
 
 .arrowHead {
-    fill: var(--kv_green);
+    fill: var(--kv_blue);
     stroke: var(--kv_gray5);
     stroke-width: .3;
 }
 
 .arrowHeadHighlighted {
-    fill: var(--kv_pink);
+    fill: var(--kv_red);
     stroke: var(--kv_gray2);
     stroke-width: .3;
 }
