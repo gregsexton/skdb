@@ -30,6 +30,11 @@ interface Source {
   key: Key;
   dir_is_input: boolean;
   contributions: Contribution[];
+}
+
+interface DirNode {
+  dir: string;
+  keys: Source[];
   id: string;
   parentIds: string[];
 }
@@ -41,33 +46,39 @@ function pprint(k: Key) {
   return JSON.stringify(k);
 }
 
-function srcId(src: Source) {
-  const sep = src.dir.endsWith("/") ? "" : "/";
-  return src.dir + sep + JSON.stringify(src.key);
-}
-
 function getData(): Source {
   return JSON.parse(data);
 }
 
-function buildDataModel(src: Source): d3dag.Graph<Source, undefined> {
-  const nodes: Source[] = [];
+function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
+  const nodes: DirNode[] = [];
 
   const nodeIdx = new Map();
 
   function walk(src: Source) {
-    const id = srcId(src);
+    const id = src.dir;
 
     let idx = nodeIdx.get(id);
 
     if (idx === undefined) {
       idx = nodes.length;
       nodeIdx.set(id, idx);
-      src.id = id;
-      src.parentIds = src.dir_is_input
-        ? []
-        : src.contributions.map((c) => srcId(c.source!));
-      nodes.push(src);
+      const node = {
+        dir: src.dir,
+        keys: [src],
+        id: id,
+        parentIds: src.dir_is_input
+          ? []
+          : src.contributions.map((c) => c.source!.dir),
+      };
+      nodes.push(node);
+    } else {
+      const node = nodes[idx];
+
+      node.keys.push(src);
+      if (!src.dir_is_input) {
+        src.contributions.map((c) => c.source!.dir).forEach((x) => node.parentIds.push(x))
+      }
     }
 
     for (const c of src.contributions ?? []) {
@@ -79,16 +90,22 @@ function buildDataModel(src: Source): d3dag.Graph<Source, undefined> {
 
   walk(src);
 
+  // dedup parents before we stratify otherwise the graph layout
+  // algorithm has a meltdown
+  for (const node of nodes) {
+    node.parentIds = [...new Set(node.parentIds)]
+  }
+
   return d3dag.graphStratify()(nodes);
 }
 
 function createKeyVis(
   svgElem: SVGSVGElement,
-  dag: d3dag.Graph<Source, undefined>,
+  dag: d3dag.Graph<DirNode, undefined>,
 ) {
   const highlightedSourceIds = new Set<String>();
 
-  const updateVis = createDagVis<Source, undefined>(
+  const updateVis = createDagVis<DirNode, undefined>(
     svgElem,
     dag,
     // node enter
@@ -96,6 +113,7 @@ function createKeyVis(
       div.classed("highlighted", (d) => highlightedSourceIds.has(d.data.id));
       div
         .append("div")
+        .classed("dir-title", true)
         .append("pre")
         .text("Dir: ")
         .attr("class", "dir")
@@ -103,49 +121,65 @@ function createKeyVis(
         .text((d) => d.data.dir);
 
       div
-        .append("pre")
-        .text("Key: ")
-        .attr("class", "key")
-        .append("code")
-        .text((d) => pprint(d.data.key));
-
-      const contributions = div.append("div").attr("class", "contributions");
-
-      contributions.append("span").text("Files").attr("class", "heading");
-
-      contributions
+        .append("div")
+        .classed("keys", true)
         .selectAll("div")
-        .data((d) => d.data.contributions)
+        .data((d) => d.data.keys)
         .join((enter) => {
-          const div = enter.append("div").attr("class", "contribution");
-
-          div.on("mouseout", () => {
-            highlightedSourceIds.clear();
-            updateVis();
-          });
-          div.on("mouseover", (_e, d) => {
-            if (d.source) {
-              highlightedSourceIds.add(d.source.id);
-              updateVis();
-            }
-          });
-
-          div
-            .append("div")
-            .selectAll("pre")
-            .data((d) => d.files)
-            .join((enter) => {
-              return enter.append("pre").attr("class", "file").append("code");
-            })
-            .text((d) => pprint(d));
+          const div = enter.append("div");
 
           div
             .append("pre")
-            .attr("class", "tick")
+            .text("Key: ")
+            .attr("class", "key")
             .append("code")
-            .text((d) => "Tick: " + d.tick);
+            .text((d) => pprint(d.key));
 
-          // div.append("p").text((d) => d.writer);
+          const contributions = div
+            .append("div")
+            .attr("class", "contributions");
+
+          contributions.append("span").text("Files").attr("class", "heading");
+
+          contributions
+            .selectAll("div")
+            .data((d) => d.contributions)
+            .join((enter) => {
+              const div = enter.append("div").attr("class", "contribution");
+
+              div.on("mouseout", () => {
+                highlightedSourceIds.clear();
+                updateVis();
+              });
+              div.on("mouseover", (_e, d) => {
+                if (d.source) {
+                  highlightedSourceIds.add(d.source.dir);
+                  updateVis();
+                }
+              });
+
+              div
+                .append("div")
+                .selectAll("pre")
+                .data((d) => d.files)
+                .join((enter) => {
+                  return enter
+                    .append("pre")
+                    .attr("class", "file")
+                    .append("code");
+                })
+                .text((d) => pprint(d));
+
+              div
+                .append("pre")
+                .attr("class", "tick")
+                .append("code")
+                .text((d) => "Tick: " + d.tick);
+
+              // div.append("p").text((d) => d.writer);
+
+              return div;
+            });
 
           return div;
         });
