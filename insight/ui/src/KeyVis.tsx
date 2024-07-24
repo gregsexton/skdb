@@ -77,7 +77,9 @@ function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
 
       node.keys.push(src);
       if (!src.dir_is_input) {
-        src.contributions.map((c) => c.source!.dir).forEach((x) => node.parentIds.push(x))
+        src.contributions
+          .map((c) => c.source!.dir)
+          .forEach((x) => node.parentIds.push(x));
       }
     }
 
@@ -93,7 +95,7 @@ function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
   // dedup parents before we stratify otherwise the graph layout
   // algorithm has a meltdown
   for (const node of nodes) {
-    node.parentIds = [...new Set(node.parentIds)]
+    node.parentIds = [...new Set(node.parentIds)];
   }
 
   return d3dag.graphStratify()(nodes);
@@ -103,14 +105,15 @@ function createKeyVis(
   svgElem: SVGSVGElement,
   dag: d3dag.Graph<DirNode, undefined>,
 ) {
-  const highlightedSourceIds = new Set<String>();
+  const highlightedDirs = new Set<string>();
+  const highlightedSources = new Set<Source>();
 
   const updateVis = createDagVis<DirNode, undefined>(
     svgElem,
     dag,
     // node enter
     (div) => {
-      div.classed("highlighted", (d) => highlightedSourceIds.has(d.data.id));
+      div.classed("highlighted", (d) => highlightedDirs.has(d.data.id));
       div
         .append("div")
         .classed("dir-title", true)
@@ -148,12 +151,14 @@ function createKeyVis(
               const div = enter.append("div").attr("class", "contribution");
 
               div.on("mouseout", () => {
-                highlightedSourceIds.clear();
+                highlightedDirs.clear();
+                highlightedSources.clear();
                 updateVis();
               });
               div.on("mouseover", (_e, d) => {
                 if (d.source) {
-                  highlightedSourceIds.add(d.source.dir);
+                  highlightedDirs.add(d.source.dir);
+                  highlightedSources.add(d.source);
                   updateVis();
                 }
               });
@@ -186,12 +191,18 @@ function createKeyVis(
     },
     // node update
     (div) => {
-      div.classed("highlighted", (d) => highlightedSourceIds.has(d.data.id));
+      div.classed("highlighted", (d) => highlightedDirs.has(d.data.id));
+      div
+        .selectAll(".keys")
+        .selectAll("div")
+        .selectAll(".contributions")
+        //@ts-ignore
+        .classed("highlighted", (d) => highlightedSources.has(d));
     },
     // link enter
     (d) => {
       d.attr("marker-end", (d) =>
-        highlightedSourceIds.has(d.source.data.id)
+        highlightedDirs.has(d.source.data.id)
           ? "url(#arrow-highlighted)"
           : "url(#arrow)",
       );
@@ -199,12 +210,10 @@ function createKeyVis(
     // link update
     (d) => {
       d.attr("marker-end", (d) =>
-        highlightedSourceIds.has(d.source.data.id)
+        highlightedDirs.has(d.source.data.id)
           ? "url(#arrow-highlighted)"
           : "url(#arrow)",
-      ).classed("highlighted", (d) =>
-        highlightedSourceIds.has(d.source.data.id),
-      );
+      ).classed("highlighted", (d) => highlightedDirs.has(d.source.data.id));
     },
   );
 }

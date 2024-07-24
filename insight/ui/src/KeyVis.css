@@ -105,6 +105,10 @@ svg {
     border-bottom: 1px solid var(--kv_gray4);
 }
 
+#nodes .node .contributions.highlighted .contribution {
+    background-color: var(--kv_red);
+}
+
 #nodes .node .contributions .contribution .tick {
     padding-left: 1em;
     margin: 0em;
