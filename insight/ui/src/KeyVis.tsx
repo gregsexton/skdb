@@ -130,9 +130,15 @@ function createKeyVis(
         .append("code")
         .text((d) => d.data.dir);
 
-      div
+      const keys = div
         .append("div")
-        .classed("keys", true)
+        .classed("keys", true);
+      keys
+        .append("span")
+        .text("Keys")
+        .attr("class", "heading");
+
+      keys
         .selectAll("div")
         .data((d) => d.data.keys)
         .join((enter) => {
@@ -140,7 +146,6 @@ function createKeyVis(
 
           div
             .append("pre")
-            .text("Key: ")
             .attr("class", "key")
             .append("code")
             .text((d) => pprint(d.key));

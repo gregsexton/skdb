@@ -3,10 +3,12 @@
     --kv_beige_l: #d5c5bf;
 
     --kv_blue: #242f40;
+    --kv_blue_b: #2e3c52;
     --kv_blue_l: #3e4a5d;
-    --kv_blue_ll: #8a9bb3;
+    --kv_green: #8a9bb3;
+    --kv_blue_l2: #4e5d75;
 
-    --kv_green: #9cc4b2;
+    --kv_green: #4a6156;
     --kv_green_l: #aec7bb;
 
     --kv_red: #664a65;
@@ -47,7 +49,7 @@ svg {
 #nodes .node .dir-title {
     box-shadow: 0px 3px 3px 0.001px rgb(0 0 0 / 20%);
     position:relative;
-    z-index:2;
+    z-index:3;
 }
 
 #nodes .node .dir {
@@ -64,13 +66,27 @@ svg {
 }
 
 #nodes .node.highlighted .dir {
-    background-color: var(--kv_blue_ll);
-    color: var(--kv_gray6);
+    background-color: var(--kv_green);
+    color: var(--kv_gray0);
+}
+
+#nodes .node .keys .heading {
+    padding-left: 1em;
+    padding-top: .3em;
+    padding-bottom: .3em;
+    font-family: monospace;
+    display: block;
+    position: relative;
+    z-index:2;
+    box-shadow: 0px 2px 3px 0.001px rgb(0 0 0 / 30%);
+
+    background-color: var(--kv_blue_b);
+    color: var(--kv_gray2);
 }
 
 #nodes .node .key {
     padding-left: 1em;
-    background-color: var(--kv_blue_l);
+    background-color: var(--kv_blue_l2);
     color: var(--kv_gray2);
     margin: 0em;
     padding-top: 1em;
@@ -80,15 +96,16 @@ svg {
     box-shadow: 0px 2px 3px 0.001px rgb(0 0 0 / 30%);
     z-index:1;
     position:relative;
+    /* margin-top: 1em; */
 }
 
-#nodes .node .contributions {
+#nodes .node .keys .contributions {
+    margin-bottom: .5em;
+}
+
+#nodes .node .keys .contributions .heading {
     background-color: var(--kv_beige);
     color: var(--kv_gray6);
-    margin-bottom: 1em;
-}
-
-#nodes .node .contributions .heading {
     padding-left: 1em;
     padding-top: .3em;
     padding-bottom: .3em;
@@ -135,7 +152,7 @@ svg {
 }
 
 #links path.highlighted {
-    stroke: var(--kv_blue_ll);
+    stroke: var(--kv_green);
 }
 
 .arrowHead {
@@ -145,7 +162,7 @@ svg {
 }
 
 .arrowHeadHighlighted {
-    fill: var(--kv_blue_ll);
+    fill: var(--kv_green);
     stroke: var(--kv_gray2);
     stroke-width: .3;
 }

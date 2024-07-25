@@ -10,39 +10,19 @@ import * as d3dag from "d3-dag";
 // nodes and edges are rendered. this provides layout, link rendering,
 // moving nodes, panning and zooming.
 export function createDagVis<Node, Edge>(
-  svgElem: SVGSVGElement,       // root container
+  svgElem: SVGSVGElement, // root container
   dag: d3dag.Graph<Node, undefined>, // use d3dag.graphStratify
   nodeEnter: (
-    div: d3.Selection<
-      HTMLDivElement,
-      d3dag.GraphNode<Node, Edge>,
-      any,
-      any
-    >,
+    div: d3.Selection<HTMLDivElement, d3dag.GraphNode<Node, Edge>, any, any>,
   ) => void,
   nodeUpdate: (
-    div: d3.Selection<
-      HTMLDivElement,
-      d3dag.GraphNode<Node, Edge>,
-      any,
-      any
-    >,
+    div: d3.Selection<HTMLDivElement, d3dag.GraphNode<Node, Edge>, any, any>,
   ) => void,
   linkEnter: (
-    div: d3.Selection<
-      SVGPathElement,
-      d3dag.GraphLink<Node, Edge>,
-      any,
-      any
-    >,
+    div: d3.Selection<SVGPathElement, d3dag.GraphLink<Node, Edge>, any, any>,
   ) => void,
   linkUpdate: (
-    div: d3.Selection<
-      SVGPathElement,
-      d3dag.GraphLink<Node, Edge>,
-      any,
-      any
-    >,
+    div: d3.Selection<SVGPathElement, d3dag.GraphLink<Node, Edge>, any, any>,
   ) => void,
 ) {
   const svg = d3.select(svgElem);
@@ -51,7 +31,7 @@ export function createDagVis<Node, Edge>(
 
   // TODO: extract these numbers to input params
   const [nodeW, nodeH] = [900, 600];
-  const layout = d3dag.sugiyama().nodeSize([nodeW, nodeH]).gap([150, 100]);
+  const layout = d3dag.sugiyama().nodeSize([nodeW, nodeH]).gap([50, 200]);
   layout(dag);
 
   const defs = svg.append("defs");
@@ -162,19 +142,21 @@ export function createDagVis<Node, Edge>(
       .data(dag.links())
       .join(
         (enter) => {
-          return enter
-            .append("path")
-            .attr("d", (link) => {
-              const [[x0, y0], [x1, y1]] = link.points;
-              const points: [number, number][] = [
-                [x0 + nodeW / 2, y0 + nodeH],
-                [x1 + nodeW / 2, y1],
-              ];
-              link.points = points;
-              return line(points);
-            })
-            //@ts-ignore
-            .call(linkEnter);
+          return (
+            enter
+              .append("path")
+              .attr("d", (link) => {
+                const [[x0, y0], [x1, y1]] = link.points;
+                const points: [number, number][] = [
+                  [x0 + nodeW / 2, y0 + nodeH],
+                  [x1 + nodeW / 2, y1],
+                ];
+                link.points = points;
+                return line(points);
+              })
+              //@ts-ignore
+              .call(linkEnter)
+          );
         },
         (update) => {
           return (
