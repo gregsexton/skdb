@@ -108,6 +108,13 @@ function createKeyVis(
   const highlightedDirs = new Set<string>();
   const highlightedSources = new Set<Source>();
 
+  const highlight = (src?: Source) => {
+    if (src === undefined) return;
+    highlightedDirs.add(src.dir);
+    highlightedSources.add(src);
+    src.contributions.forEach((c) => highlight(c.source));
+  };
+
   const updateVis = createDagVis<DirNode, undefined>(
     svgElem,
     dag,
@@ -157,8 +164,7 @@ function createKeyVis(
               });
               div.on("mouseover", (_e, d) => {
                 if (d.source) {
-                  highlightedDirs.add(d.source.dir);
-                  highlightedSources.add(d.source);
+                  highlight(d.source);
                   updateVis();
                 }
               });

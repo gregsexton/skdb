@@ -4,15 +4,13 @@
 
     --kv_blue: #242f40;
     --kv_blue_l: #3e4a5d;
+    --kv_blue_ll: #8a9bb3;
 
     --kv_green: #9cc4b2;
     --kv_green_l: #aec7bb;
 
-    --kv_pink: #c98ca7;
-    --kv_pink_l: #c9a3b4;
-
-    --kv_red: #e76d83;
-    --kv_red_l: #db909e;
+    --kv_red: #664a65;
+    --kv_red_l: #4c434d;
 
     --kv_gray0: #eeeeee;
     --kv_gray1: #dddddd;
@@ -25,7 +23,7 @@
 }
 
 svg {
-    background-color: var(--kv_green);
+    background-color: var(--kv_gray0);
 }
 
 #nodes foreignObject {
@@ -34,11 +32,13 @@ svg {
     border-style: solid;
     overflow: auto;
     background-color: var(--kv_green_l);
+    border-radius: 1em;
 }
 
 #nodes .node {
     /* background-color: var(--kv_green_l); */
-    background-color: var(--kv_blue_l);
+    padding-top: 1em;
+    background-color: var(--kv_gray2);
     color: var(--kv_gray0);
     height: 100%;
     box-sizing: border-box;
@@ -64,7 +64,8 @@ svg {
 }
 
 #nodes .node.highlighted .dir {
-    background-color: var(--kv_red);
+    background-color: var(--kv_blue_ll);
+    color: var(--kv_gray6);
 }
 
 #nodes .node .key {
@@ -84,12 +85,13 @@ svg {
 #nodes .node .contributions {
     background-color: var(--kv_beige);
     color: var(--kv_gray6);
+    margin-bottom: 1em;
 }
 
 #nodes .node .contributions .heading {
-    padding-left: 1.5em;
-    padding-top: 1em;
-    padding-bottom: 1em;
+    padding-left: 1em;
+    padding-top: .3em;
+    padding-bottom: .3em;
     font-family: monospace;
     display: block;
     position: relative;
@@ -106,7 +108,8 @@ svg {
 }
 
 #nodes .node .contributions.highlighted .contribution {
-    background-color: var(--kv_red);
+    background-color: var(--kv_green_l);
+    /* color: var(--kv_gray2); */
 }
 
 #nodes .node .contributions .contribution .tick {
@@ -118,7 +121,7 @@ svg {
 }
 
 #nodes .node .contributions .contribution .file {
-    padding-left: 2em;
+    padding-left: 1em;
     margin: 0em;
     padding-top: 1em;
     padding-bottom: 1em;
@@ -132,7 +135,7 @@ svg {
 }
 
 #links path.highlighted {
-    stroke: var(--kv_red);
+    stroke: var(--kv_blue_ll);
 }
 
 .arrowHead {
@@ -142,7 +145,7 @@ svg {
 }
 
 .arrowHeadHighlighted {
-    fill: var(--kv_red);
+    fill: var(--kv_blue_ll);
     stroke: var(--kv_gray2);
     stroke-width: .3;
 }
