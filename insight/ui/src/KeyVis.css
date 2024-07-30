@@ -5,7 +5,6 @@
     --kv_blue: #242f40;
     --kv_blue_b: #2e3c52;
     --kv_blue_l: #3e4a5d;
-    --kv_green: #8a9bb3;
     --kv_blue_l2: #4e5d75;
 
     --kv_green: #4a6156;
@@ -66,8 +65,8 @@ svg {
 }
 
 #nodes .node.highlighted .dir {
-    background-color: var(--kv_green);
-    color: var(--kv_gray0);
+    /* background-color: var(--kv_green_l); */
+    /* color: var(--kv_gray0); */
 }
 
 #nodes .node .keys .heading {
@@ -152,7 +151,7 @@ svg {
 }
 
 #links path.highlighted {
-    stroke: var(--kv_green);
+    stroke: var(--kv_green_l);
 }
 
 .arrowHead {
@@ -162,7 +161,7 @@ svg {
 }
 
 .arrowHeadHighlighted {
-    fill: var(--kv_green);
+    fill: var(--kv_green_l);
     stroke: var(--kv_gray2);
     stroke-width: .3;
 }
