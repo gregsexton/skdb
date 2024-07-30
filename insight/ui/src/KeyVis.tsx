@@ -23,6 +23,7 @@ interface Contribution {
   writer: string;
   files: File[];
   source?: Source;
+  mapfns: string[];
 }
 
 interface Source {

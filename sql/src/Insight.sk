@@ -39,7 +39,7 @@ private fun jserialiseFile(file: SKStore.File): JSON.Value {
         | Some(SKDB.CFloat(x)) -> jserialiseFloat(x)
         | Some(SKDB.CString(s)) -> jserialiseStr(s)
         | Some(SKDB.CJSON(_)) -> invariant_violation("TODO: map to JSON")
-        | Some(SKDB.CType _ ) -> invariant_violation("TODO: map to something")
+        | Some(SKDB.CType _) -> invariant_violation("TODO: map to something")
         }
       ),
     )
@@ -76,6 +76,34 @@ private fun buildDepObject(
 
     contribution!["files"] = JSON.Array::createFromIterator(
       files.iterator().map(jserialiseFile),
+    );
+
+    contribution!["mapfns"] = JSON.Array::createFromIterator(
+      dir.parents.maybeGet(source.dirName) match {
+      | None() -> Array[].iterator()
+      | Some(fns) ->
+        fns
+          .iterator()
+          .filter(f ->
+            f match {
+            | (_, None(), _) -> true
+            | (
+              _,
+              Some(ranges),
+              _,
+            ) if (
+              ranges.any(range -> range.start <= key && key <= range.end)
+            ) ->
+              true
+            | _ -> false
+            }
+          )
+          .map(f -> {
+            (mapfn, _, _) = f;
+            mapfn
+          })
+          .map(jserialise)
+      },
     );
 
     if (!dir.input) {
