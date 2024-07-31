@@ -23,11 +23,19 @@
     --kv_gray7: #000000;
 }
 
-svg {
+#keyvis {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+#keyvis svg {
     background-color: var(--kv_gray0);
 }
 
-#nodes foreignObject {
+#keyvis #nodes foreignObject {
     border-width: 1px;
     border-color: var(--kv_gray6);
     border-style: solid;
@@ -36,7 +44,7 @@ svg {
     border-radius: 1em;
 }
 
-#nodes .node {
+#keyvis #nodes .node {
     /* background-color: var(--kv_green_l); */
     padding-top: 1em;
     background-color: var(--kv_gray2);
@@ -45,13 +53,13 @@ svg {
     box-sizing: border-box;
 }
 
-#nodes .node .dir-title {
+#keyvis #nodes .node .dir-title {
     box-shadow: 0px 3px 3px 0.001px rgb(0 0 0 / 20%);
     position:relative;
     z-index:3;
 }
 
-#nodes .node .dir {
+#keyvis #nodes .node .dir {
     background-color: var(--kv_blue);
 
     margin-top: 0em;
@@ -64,12 +72,12 @@ svg {
     overflow: auto;
 }
 
-#nodes .node.highlighted .dir {
+#keyvis #nodes .node.highlighted .dir {
     /* background-color: var(--kv_green_l); */
     /* color: var(--kv_gray0); */
 }
 
-#nodes .node .keys .heading {
+#keyvis #nodes .node .keys .heading {
     padding-left: 1em;
     padding-top: .3em;
     padding-bottom: .3em;
@@ -83,7 +91,7 @@ svg {
     color: var(--kv_gray2);
 }
 
-#nodes .node .key {
+#keyvis #nodes .node .key {
     padding-left: 1em;
     background-color: var(--kv_blue_l2);
     color: var(--kv_gray2);
@@ -98,11 +106,11 @@ svg {
     /* margin-top: 1em; */
 }
 
-#nodes .node .keys .contributions {
+#keyvis #nodes .node .keys .contributions {
     margin-bottom: .5em;
 }
 
-#nodes .node .keys .contributions .heading {
+#keyvis #nodes .node .keys .contributions .heading {
     background-color: var(--kv_beige);
     color: var(--kv_gray6);
     padding-left: 1em;
@@ -115,7 +123,7 @@ svg {
     box-shadow: 0px 2px 3px 0.001px rgb(0 0 0 / 30%);
 }
 
-#nodes .node .contributions .contribution {
+#keyvis #nodes .node .contributions .contribution {
     background-color: var(--kv_beige_l);
     color: var(--kv_gray6);
     display: grid;
@@ -123,12 +131,12 @@ svg {
     border-bottom: 1px solid var(--kv_gray4);
 }
 
-#nodes .node .contributions.highlighted .contribution {
+#keyvis #nodes .node .contributions.highlighted .contribution {
     background-color: var(--kv_green_l);
     /* color: var(--kv_gray2); */
 }
 
-#nodes .node .contributions .contribution .tick {
+#keyvis #nodes .node .contributions .contribution .tick {
     padding-left: 1em;
     margin: 0em;
     padding-top: 1em;
@@ -136,7 +144,7 @@ svg {
     overflow: auto;
 }
 
-#nodes .node .contributions .contribution .codelink {
+#keyvis #nodes .node .contributions .contribution .codelink {
     padding-left: 1em;
     margin: 0em;
     padding-top: 1em;
@@ -145,12 +153,12 @@ svg {
     color: var(--kv_gray2);
 }
 
-#nodes .node .contributions .contribution .codelink a {
+#keyvis #nodes .node .contributions .contribution .codelink a {
     color: var(--kv_gray6);
     text-decoration: underline;
 }
 
-#nodes .node .contributions .contribution .file {
+#keyvis #nodes .node .contributions .contribution .file {
     padding-left: 1em;
     margin: 0em;
     padding-top: 1em;
@@ -158,24 +166,36 @@ svg {
     overflow: auto;
 }
 
-#links path {
+#keyvis #links path {
     stroke: var(--kv_blue);
     fill: none;
     stroke-width: 6;
 }
 
-#links path.highlighted {
+#keyvis #links path.highlighted {
     stroke: var(--kv_green_l);
 }
 
-.arrowHead {
+#keyvis .arrowHead {
     fill: var(--kv_blue);
     stroke: var(--kv_gray5);
     stroke-width: .3;
 }
 
-.arrowHeadHighlighted {
+#keyvis .arrowHeadHighlighted {
     fill: var(--kv_green_l);
     stroke: var(--kv_gray2);
     stroke-width: .3;
+}
+
+
+
+#keyvis div.contributionDetail {
+    overflow: auto;
+    background: var(--kv_gray1);
+}
+#keyvis div.contributionDetail.showing {
+    min-height: 30%;
+    max-height: 50%;
+    border-top: 1px solid var(--kv_gray4);
 }

@@ -1,18 +1,9 @@
 import * as d3dag from "d3-dag";
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import "./KeyVis.css";
 
 import data from "../../../gds/log/insight.json?raw";
 import { createDagVis } from "./dag";
-
-export function KeyVisualisation() {
-  const svgRef = useRef<SVGSVGElement>(null);
-  useLayoutEffect(() => {
-    const dag = buildDataModel(getData());
-    createKeyVis(svgRef.current!!, dag, () => {});
-  });
-  return <svg width="100%" height="100%" ref={svgRef}></svg>;
-}
 
 // TODO: make this a tagged object and include more data
 type File = string | (string | number)[];
@@ -40,7 +31,64 @@ interface DirNode {
   parentIds: string[];
 }
 
-function pprint(k: Key) {
+function ContributionDetail({
+  contribution,
+  dismiss,
+}: {
+  contribution?: Contribution;
+  dismiss: () => void;
+}) {
+  if (contribution === undefined) {
+    return <div className="contributionDetail" />;
+  }
+  return (
+    <div className="contributionDetail showing">
+      <h1>Contribution</h1>
+      <button onClick={() => dismiss()}>Dismiss</button>
+      <div>
+        <span>Mapped Functions</span>
+        {contribution.mapfns.map((fn) => (
+          <pre><code>{pprint(fn)}</code></pre>
+        ))}
+      </div>
+      <div>
+        <span>Writer</span>
+        <pre><code>{contribution.writer}</code></pre>
+      </div>
+      <div>
+        <span>Files</span>
+        {contribution.files.map((f) => (
+          <pre><code>{pprint(f)}</code></pre>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function KeyVisualisation() {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  const [contribution, setContribution] = useState<Contribution | undefined>(
+    undefined,
+  );
+
+  useLayoutEffect(() => {
+    const dag = buildDataModel(getData());
+    createKeyVis(svgRef.current!!, dag, setContribution);
+  }, []);
+
+  return (
+    <div id="keyvis">
+      <svg width="100%" height="100%" ref={svgRef}></svg>
+      <ContributionDetail
+        contribution={contribution}
+        dismiss={() => setContribution(undefined)}
+      />
+    </div>
+  );
+}
+
+function pprint(k: Key|File) {
   if (typeof k === "string") {
     return k;
   }
