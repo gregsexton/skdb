@@ -9,7 +9,7 @@ export function KeyVisualisation() {
   const svgRef = useRef<SVGSVGElement>(null);
   useLayoutEffect(() => {
     const dag = buildDataModel(getData());
-    createKeyVis(svgRef.current!!, dag);
+    createKeyVis(svgRef.current!!, dag, () => {});
   });
   return <svg width="100%" height="100%" ref={svgRef}></svg>;
 }
@@ -105,6 +105,7 @@ function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
 function createKeyVis(
   svgElem: SVGSVGElement,
   dag: d3dag.Graph<DirNode, undefined>,
+  viewDetailsFor: (c: Contribution) => void,
 ) {
   const highlightedDirs = new Set<string>();
   const highlightedSources = new Set<Source>();
@@ -131,13 +132,8 @@ function createKeyVis(
         .append("code")
         .text((d) => d.data.dir);
 
-      const keys = div
-        .append("div")
-        .classed("keys", true);
-      keys
-        .append("span")
-        .text("Keys")
-        .attr("class", "heading");
+      const keys = div.append("div").classed("keys", true);
+      keys.append("span").text("Keys").attr("class", "heading");
 
       keys
         .selectAll("div")
@@ -192,6 +188,17 @@ function createKeyVis(
                 .attr("class", "tick")
                 .append("code")
                 .text((d) => "Tick: " + d.tick);
+
+              div
+                .append("pre")
+                .attr("class", "codelink")
+                .append("code")
+                .append("a")
+                .text(() => "Detail")
+                .attr("href", "#")
+                .on("click", (_e, d) => {
+                  viewDetailsFor(d);
+                });
 
               // div.append("p").text((d) => d.writer);
 
