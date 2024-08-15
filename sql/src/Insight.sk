@@ -9,6 +9,15 @@ private fun jserialise<T>(x: T): JSON.String {
   JSON.String(ret);
 }
 
+private fun jserialiseJson<T>(x: T): JSON.String {
+  ret = "";
+  capture = (s) -> !ret = s;
+  writer = mutable Debug.BufferedWriter(capture, Int::max);
+  inspect(x).printJSON(writer);
+  writer.flush();
+  JSON.String(ret);
+}
+
 private fun jserialiseStr(x: String): JSON.String {
   JSON.String(x)
 }
@@ -102,7 +111,7 @@ private fun buildDepObject(
             (mapfn, _, _) = f;
             mapfn
           })
-          .map(jserialise)
+          .map(jserialiseJson)
       },
     );
 
