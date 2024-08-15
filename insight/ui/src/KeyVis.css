@@ -193,6 +193,7 @@
 #keyvis div.contributionDetail {
     overflow: auto;
     background: var(--kv_gray1);
+    flex: 0 0 content;
 }
 #keyvis div.contributionDetail.showing {
     min-height: 30%;

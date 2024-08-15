@@ -47,8 +47,8 @@ function ContributionDetail({
       <button onClick={() => dismiss()}>Dismiss</button>
       <div>
         <span>Mapped Functions</span>
-        {contribution.mapfns.map((fn) => (
-          <pre><code>{pprint(fn)}</code></pre>
+        {contribution.mapfns.map((fn, i) => (
+          <pre key={i}><code>{pprint(fn)}</code></pre>
         ))}
       </div>
       <div>
@@ -57,8 +57,8 @@ function ContributionDetail({
       </div>
       <div>
         <span>Files</span>
-        {contribution.files.map((f) => (
-          <pre><code>{pprint(f)}</code></pre>
+        {contribution.files.map((f, i) => (
+          <pre key={i}><code>{pprint(f)}</code></pre>
         ))}
       </div>
     </div>
