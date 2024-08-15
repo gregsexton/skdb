@@ -31,6 +31,11 @@ interface DirNode {
   parentIds: string[];
 }
 
+interface Vis {
+  update: () => void;
+  clearViewing: () => void;
+}
+
 function ContributionDetail({
   contribution,
   dismiss,
@@ -48,17 +53,23 @@ function ContributionDetail({
       <div>
         <span>Mapped Functions</span>
         {contribution.mapfns.map((fn, i) => (
-          <pre key={i}><code>{pprint(fn)}</code></pre>
+          <pre key={i}>
+            <code>{pprint(fn)}</code>
+          </pre>
         ))}
       </div>
       <div>
         <span>Writer</span>
-        <pre><code>{contribution.writer}</code></pre>
+        <pre>
+          <code>{contribution.writer}</code>
+        </pre>
       </div>
       <div>
         <span>Files</span>
         {contribution.files.map((f, i) => (
-          <pre key={i}><code>{pprint(f)}</code></pre>
+          <pre key={i}>
+            <code>{pprint(f)}</code>
+          </pre>
         ))}
       </div>
     </div>
@@ -72,9 +83,12 @@ export function KeyVisualisation() {
     undefined,
   );
 
+  const [vis, setVis] = useState<Vis | undefined>(undefined);
+
   useLayoutEffect(() => {
     const dag = buildDataModel(getData());
-    createKeyVis(svgRef.current!!, dag, setContribution);
+    const vis = createKeyVis(svgRef.current!!, dag, setContribution);
+    setVis(vis);
   }, []);
 
   return (
@@ -82,13 +96,18 @@ export function KeyVisualisation() {
       <svg width="100%" height="100%" ref={svgRef}></svg>
       <ContributionDetail
         contribution={contribution}
-        dismiss={() => setContribution(undefined)}
+        dismiss={() => {
+          setContribution(undefined);
+          console.log(": [etpty] vis: ", vis);
+          vis?.clearViewing();
+          vis?.update();
+        }}
       />
     </div>
   );
 }
 
-function pprint(k: Key|File) {
+function pprint(k: Key | File) {
   if (typeof k === "string") {
     return k;
   }
@@ -154,12 +173,24 @@ function createKeyVis(
   svgElem: SVGSVGElement,
   dag: d3dag.Graph<DirNode, undefined>,
   viewDetailsFor: (c: Contribution) => void,
-) {
+): Vis {
   const highlightedDirs = new Set<string>();
   const highlightedSources = new Set<Source>();
+  let viewing: Source | null = null;
 
-  const highlight = (src?: Source) => {
-    if (src === undefined) return;
+  const highlight = (src?: Source | null) => {
+    // undefined is we couldn't find a src
+    if (src === undefined) {
+      return;
+    }
+
+    // null is an explicit sentinel for clearing
+    if (src === null) {
+      highlightedDirs.clear();
+      highlightedSources.clear();
+      return;
+    }
+
     highlightedDirs.add(src.dir);
     highlightedSources.add(src);
     src.contributions.forEach((c) => highlight(c.source));
@@ -208,12 +239,13 @@ function createKeyVis(
               const div = enter.append("div").attr("class", "contribution");
 
               div.on("mouseout", () => {
-                highlightedDirs.clear();
-                highlightedSources.clear();
+                highlight(null);
+                highlight(viewing);
                 updateVis();
               });
               div.on("mouseover", (_e, d) => {
                 if (d.source) {
+                  highlight(null);
                   highlight(d.source);
                   updateVis();
                 }
@@ -245,6 +277,7 @@ function createKeyVis(
                 .text(() => "Detail")
                 .attr("href", "#")
                 .on("click", (_e, d) => {
+                  viewing = d.source ?? null;
                   viewDetailsFor(d);
                 });
 
@@ -283,4 +316,12 @@ function createKeyVis(
       ).classed("highlighted", (d) => highlightedDirs.has(d.source.data.id));
     },
   );
+
+  return {
+    update: updateVis,
+    clearViewing: () => {
+      viewing = null;
+      highlight(null);
+    },
+  };
 }
