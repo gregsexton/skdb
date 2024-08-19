@@ -4,6 +4,7 @@ import "./KeyVis.css";
 
 import data from "../../../gds/log/insight.json?raw";
 import { createDagVis } from "./dag";
+import { SkipDatum, SkipLambda } from "./SkipData";
 
 // TODO: make this a tagged object and include more data
 type File = string | (string | number)[];
@@ -46,16 +47,19 @@ function ContributionDetail({
   if (contribution === undefined) {
     return <div className="contributionDetail" />;
   }
+
   return (
     <div className="contributionDetail showing">
-      <h1>Contribution</h1>
+      <h1>
+        <pre>
+          <code>{pprint(contribution.files[0])}</code>
+        </pre>
+      </h1>
       <button onClick={() => dismiss()}>Dismiss</button>
       <div>
         <span>Mapped Functions</span>
         {contribution.mapfns.map((fn, i) => (
-          <pre key={i}>
-            <code>{pprint(fn)}</code>
-          </pre>
+          <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
         ))}
       </div>
       <div>
