@@ -243,7 +243,7 @@ export function SkipDatum({ value }: { value: SkipType }) {
         <TitledBlock title={`${value.name} of`}>
           <SkipDataTable
             entries={value.value.map((x, i) => [i.toString(), x])}
-            header={["index", "Value"]}
+            header={["Index", "Value"]}
           />
         </TitledBlock>
       );

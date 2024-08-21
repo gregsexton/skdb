@@ -211,6 +211,11 @@
     margin: 0.2em;
 }
 
+#keyvis div.contributionDetail .skipValueContainer pre {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
 #keyvis div.contributionDetail .skipValueContainer table {
     border: 1px solid var(--kv_gray4);
     width: 100%;
