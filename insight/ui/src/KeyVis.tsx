@@ -102,7 +102,6 @@ export function KeyVisualisation() {
         contribution={contribution}
         dismiss={() => {
           setContribution(undefined);
-          console.log(": [etpty] vis: ", vis);
           vis?.clearViewing();
           vis?.update();
         }}

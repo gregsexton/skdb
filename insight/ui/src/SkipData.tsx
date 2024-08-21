@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export type SkipType =
   | SkipLambda
   | SkipObject
@@ -54,6 +56,29 @@ export interface SkipLambda {
   };
 }
 
+function TitledBlock({
+  children,
+  title,
+}: {
+  children?: ReactNode;
+  title: string;
+}) {
+  return (
+    <div className="skipValueContainer">
+      <h3>{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+function DataBlock({ children }: { children: ReactNode }) {
+  return <pre>{children}</pre>;
+}
+
+function DataSpan({ children }: { children: ReactNode }) {
+  return <code>{children}</code>;
+}
+
 function SkipDataList({ values }: { values: SkipType[] }) {
   return (
     <ul>
@@ -73,6 +98,9 @@ function SkipDataTable({
   entries: [string | SkipType, SkipType][];
   header?: [string, string];
 }) {
+  if (entries.length < 1) {
+    return <></>;
+  }
   return (
     <table>
       <thead>
@@ -85,7 +113,11 @@ function SkipDataTable({
         {entries.map(([k, v], i) => (
           <tr key={i}>
             <td>
-              {typeof k === "string" ? <pre>{k}</pre> : <SkipDatum value={k} />}
+              {typeof k === "string" ? (
+                <DataBlock>{k}</DataBlock>
+              ) : (
+                <SkipDatum value={k} />
+              )}
             </td>
             <td>
               <SkipDatum value={v} />
@@ -100,9 +132,9 @@ function SkipDataTable({
 function SkipDatumSpan({ value }: { value: SkipLiteral | SkipString }) {
   switch (value.type) {
     case "literal":
-      return <code>{value.value}</code>;
+      return <DataSpan>{value.value}</DataSpan>;
     case "string":
-      return <code>"{value.value}"</code>;
+      return <DataSpan>"{value.value}"</DataSpan>;
     default:
       throw new Error("Unsupported value type.");
   }
@@ -111,18 +143,18 @@ function SkipDatumSpan({ value }: { value: SkipLiteral | SkipString }) {
 export function SkipDatum({ value }: { value: SkipType }) {
   switch (value.type) {
     case "literal":
-      return <pre>{value.value}</pre>;
+      return <DataBlock>{value.value}</DataBlock>;
     case "string":
-      return <pre>"{value.value}"</pre>;
+      return <DataBlock>"{value.value}"</DataBlock>;
     case "call": {
       if (value.value.length < 1) {
-        return <pre>{value.name}()</pre>;
+        return <DataBlock>{value.name}()</DataBlock>;
       }
 
       if (value.value.every((v) => ["string", "literal"].includes(v.type))) {
         const vals = value.value as (SkipLiteral | SkipString)[];
         return (
-          <pre>
+          <DataBlock>
             {value.name}(
             {vals.map((v, i) => (
               <span key={i}>
@@ -131,95 +163,84 @@ export function SkipDatum({ value }: { value: SkipType }) {
               </span>
             ))}
             )
-          </pre>
+          </DataBlock>
         );
       }
 
       // tuple
       if (value.name.trim() === "") {
         return (
-          <div>
-            <h3>Tuple</h3>
+          <TitledBlock title="Tuple">
             <SkipDataList values={value.value} />
-          </div>
+          </TitledBlock>
         );
       }
 
       return (
-        <div>
-          <h3>{value.name}</h3>
+        <TitledBlock title={value.name}>
           <SkipDataTable
             entries={value.value.map((x, i) => [i.toString(), x])}
             header={["Arg", "Value"]}
           />
-        </div>
+        </TitledBlock>
       );
     }
     case "object":
       if (value.name === "Lambda") {
         const fn = value as SkipLambda;
+        const closure = Object.entries(fn.value.captured.value);
         return (
           <div>
-            <div>
-              <h3>Source</h3>
-              <pre>{fn.value.source.value}</pre>
-            </div>
-            <div>
-              <h3>Closes over</h3>
-              <SkipDataTable
-                entries={Object.entries(fn.value.captured.value)}
-              />
-            </div>
+            <TitledBlock title="Lambda">
+              <DataBlock>{fn.value.source.value}</DataBlock>
+            </TitledBlock>
+            <TitledBlock
+              title={closure.length < 1 ? "Empty closure" : "Closes over"}
+            >
+              <SkipDataTable entries={closure} />
+            </TitledBlock>
           </div>
         );
       } else {
         return (
-          <div>
-            <div>
-              <h3>{value.name}</h3>
-            </div>
-            <div>
-              <h3>Attributes</h3>
-              <SkipDataTable
-                entries={Object.entries(value.value)}
-                header={["Attribute", "Value"]}
-              />
-            </div>
-          </div>
+          <TitledBlock title={value.name}>
+            <SkipDataTable
+              entries={Object.entries(value.value)}
+              header={["Attribute", "Value"]}
+            />
+          </TitledBlock>
         );
       }
     case "vector":
       if (value.value.length < 1) {
         if (value.name === "Array") {
-          return <pre>{value.name}[]</pre>;
+          return <DataBlock>{value.name}[]</DataBlock>;
         }
-        return <pre>{value.name}()</pre>;
+        return <DataBlock>{value.name}()</DataBlock>;
       }
       return (
-        <div>
-          <h3>{value.name} of</h3>
+        <TitledBlock title={`${value.name} of`}>
           <SkipDataTable
             entries={value.value.map((x, i) => [i.toString(), x])}
             header={["index", "Value"]}
           />
-        </div>
+        </TitledBlock>
       );
     case "map":
       if (value.value.length < 1) {
-        return <pre>{value.name}()</pre>;
+        return <DataBlock>{value.name}()</DataBlock>;
       }
       return (
-        <div>
-          <h3>{value.name} of</h3>
+        <TitledBlock title={`${value.name} of`}>
           <SkipDataTable
             entries={value.value
               .filter((_x, i) => i % 2 == 0)
               .map((key, i) => [key, value.value[i * 2 + 1]])}
             header={["Key", "Value"]}
           />
-        </div>
+        </TitledBlock>
       );
     default:
-      return <pre>{JSON.stringify(value)}</pre>;
+      return <DataBlock>{JSON.stringify(value)}</DataBlock>;
   }
 }

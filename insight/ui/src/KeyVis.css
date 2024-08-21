@@ -191,12 +191,66 @@
 
 
 #keyvis div.contributionDetail {
-    overflow: auto;
-    background: var(--kv_gray1);
+    background: var(--kv_gray0);
     flex: 0 0 content;
+    overflow-y: auto;
 }
 #keyvis div.contributionDetail.showing {
-    min-height: 30%;
+    height: 50%;
     max-height: 50%;
     border-top: 1px solid var(--kv_gray4);
+    flex: 0 0 50%;
+}
+
+#keyvis div.contributionDetail .skipValueContainer {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+#keyvis div.contributionDetail .skipValueContainer h3 {
+    margin: 0.2em;
+}
+
+#keyvis div.contributionDetail .skipValueContainer table {
+    border: 1px solid var(--kv_gray4);
+    width: 100%;
+    max-width: 100%;
+    table-layout: auto;
+    margin-bottom: .5em;
+    background-color: var(--kv_gray0);
+    border-collapse: separate;
+    border-spacing: 1px 0px;;
+}
+
+#keyvis div.contributionDetail .skipValueContainer table thead th {
+    font-weight: normal;
+    text-align: left;
+    padding-top: .5em;
+    padding-left: .5em;
+    padding-right: .5em;
+    padding-bottom: .5em;
+    color: var(--kv_gray1);
+    background-color: var(--kv_blue_b);
+}
+
+#keyvis div.contributionDetail .skipValueContainer table tbody {
+    color: var(--kv_blue_b);
+}
+
+#keyvis div.contributionDetail .skipValueContainer table tbody tr td {
+    padding-left: .5em;
+    padding-right: .5em;
+    vertical-align: top;
+    overflow: auto;
+}
+
+#keyvis div.contributionDetail .skipValueContainer table tbody tr td:last-child {
+    width: 100%;
+}
+
+#keyvis div.contributionDetail .skipValueContainer table tbody tr:nth-child(odd) {
+    background-color: var(--kv_gray1);
+}
+#keyvis div.contributionDetail .skipValueContainer table tbody tr:nth-child(even) {
+    background-color: var(--kv_gray2);
 }
