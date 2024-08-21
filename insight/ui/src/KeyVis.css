@@ -242,6 +242,7 @@
     padding-right: .5em;
     vertical-align: top;
     overflow: auto;
+    vertical-align: middle;
 }
 
 #keyvis div.contributionDetail .skipValueContainer table tbody tr td:last-child {

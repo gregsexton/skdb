@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
 export type SkipType =
   | SkipLambda
@@ -91,6 +91,32 @@ function SkipDataList({ values }: { values: SkipType[] }) {
   );
 }
 
+function SkipDataTableRow({ k, v }: { k: string | SkipType; v: SkipType }) {
+  const [collapsed, setCollapsed] = useState(false);
+  return (
+    <tr>
+      <td
+        onClick={() => setCollapsed(!collapsed)}
+        style={{ cursor: "pointer" }}
+      >
+        {typeof k === "string" ? (
+          <DataBlock>{k}</DataBlock>
+        ) : (
+          <SkipDatum value={k} />
+        )}
+      </td>
+      <td>
+        {collapsed ? (
+          <div>
+            <i>*collapsed*</i>
+          </div>
+        ) : (
+          <SkipDatum value={v} />
+        )}
+      </td>
+    </tr>
+  );
+}
 function SkipDataTable({
   entries,
   header = ["Variable", "Value"],
@@ -111,18 +137,7 @@ function SkipDataTable({
       </thead>
       <tbody>
         {entries.map(([k, v], i) => (
-          <tr key={i}>
-            <td>
-              {typeof k === "string" ? (
-                <DataBlock>{k}</DataBlock>
-              ) : (
-                <SkipDatum value={k} />
-              )}
-            </td>
-            <td>
-              <SkipDatum value={v} />
-            </td>
-          </tr>
+          <SkipDataTableRow key={i} k={k} v={v} />
         ))}
       </tbody>
     </table>
@@ -191,14 +206,20 @@ export function SkipDatum({ value }: { value: SkipType }) {
         const closure = Object.entries(fn.value.captured.value);
         return (
           <div>
-            <TitledBlock title="Lambda">
+            <TitledBlock
+              title={
+                closure.length < 1 ? "Lambda with empty closure" : "Lambda"
+              }
+            >
               <DataBlock>{fn.value.source.value}</DataBlock>
             </TitledBlock>
-            <TitledBlock
-              title={closure.length < 1 ? "Empty closure" : "Closes over"}
-            >
-              <SkipDataTable entries={closure} />
-            </TitledBlock>
+            {closure.length < 1 ? (
+              <></>
+            ) : (
+              <TitledBlock title="Closes over">
+                <SkipDataTable entries={closure} />
+              </TitledBlock>
+            )}
           </div>
         );
       } else {
