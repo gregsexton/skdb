@@ -50,30 +50,39 @@ function ContributionDetail({
 
   return (
     <div className="contributionDetail showing">
-      <h1>
-        <pre>
-          <code>{pprint(contribution.files[0])}</code>
-        </pre>
-      </h1>
-      <button onClick={() => dismiss()}>Dismiss</button>
-      <div>
-        <span>Mapped Functions</span>
-        {contribution.mapfns.map((fn, i) => (
-          <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
-        ))}
+      <div className="header">
+        <h1>
+          Details
+        </h1>
+        <button onClick={() => dismiss()}>&times;</button>
       </div>
-      <div>
-        <span>Writer</span>
-        <pre>
-          <code>{contribution.writer}</code>
-        </pre>
-      </div>
-      <div>
-        <span>Files</span>
+      <div className="section">
+        <h1>Files</h1>
         {contribution.files.map((f, i) => (
           <pre key={i}>
             <code>{pprint(f)}</code>
           </pre>
+        ))}
+      </div>
+      <div className="section">
+        <h1>Source</h1>
+        <pre>
+          Dir: <code>{contribution.source?.dir}</code>
+        </pre>
+        <pre>
+          Key: <code>{pprint(contribution.source?.key)}</code>
+        </pre>
+      </div>
+      <div className="section">
+        <h1>Writer</h1>
+        <pre>
+          <code>{contribution.writer}</code>
+        </pre>
+      </div>
+      <div className="section">
+        <h1>Mapped Functions</h1>
+        {contribution.mapfns.map((fn, i) => (
+          <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
         ))}
       </div>
     </div>

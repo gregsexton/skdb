@@ -202,6 +202,50 @@
     flex: 0 0 50%;
 }
 
+#keyvis div.contributionDetail.showing > .header {
+    display: flex;
+    align-items: center;
+    padding: 1em;
+    border-bottom: 1px solid var(--kv_gray1);
+    color: var(--kv_gray1);
+    background-color: var(--kv_blue_b);
+}
+
+#keyvis div.contributionDetail.showing > .header > h1 {
+    font-size: 1.4em;
+    font-weight: 600;
+    margin: 0em;
+    flex: 1;
+}
+
+#keyvis div.contributionDetail.showing > .header > button {
+    font-size: 1.4em;
+    flex: 0;
+    background-color: var(--kv_gray0);
+    padding: 0.2em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+#keyvis div.contributionDetail.showing > .header > button:hover {
+    font-size: 1.4em;
+    flex: 0;
+    background-color: var(--kv_gray1);
+    border: 1px solid var(--kv_gray4);
+}
+
+#keyvis div.contributionDetail.showing > .section {
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 2em;
+}
+
+#keyvis div.contributionDetail.showing > .section > h1 {
+    font-size: 1.4em;
+    font-weight: 600;
+    margin-top: 1em;
+}
+
 #keyvis div.contributionDetail .skipValueContainer {
     padding-left: 0.5em;
     padding-right: 0.5em;
