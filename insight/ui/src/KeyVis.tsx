@@ -1,5 +1,5 @@
 import * as d3dag from "d3-dag";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, ReactNode } from "react";
 import "./KeyVis.css";
 
 import data from "../../../gds/log/insight.json?raw";
@@ -37,6 +37,31 @@ interface Vis {
   clearViewing: () => void;
 }
 
+function DetailSection({
+  children,
+  title,
+  startOpen = false,
+}: {
+  children: ReactNode;
+  title: string;
+  startOpen?: boolean;
+}) {
+  const [collapsed, setCollapsed] = useState(!startOpen);
+  return (
+    <div className="section">
+      <h1
+        onClick={() => setCollapsed(!collapsed)}
+        style={{ cursor: "pointer" }}
+      >
+        {collapsed ? "\u25B8" : "\u25BE"}
+          {" "}
+        {title}
+      </h1>
+      {collapsed ? <></> : children}
+    </div>
+  );
+}
+
 function ContributionDetail({
   contribution,
   dismiss,
@@ -51,40 +76,34 @@ function ContributionDetail({
   return (
     <div className="contributionDetail showing">
       <div className="header">
-        <h1>
-          Details
-        </h1>
+        <h1>Detail</h1>
         <button onClick={() => dismiss()}>&times;</button>
       </div>
-      <div className="section">
-        <h1>Files</h1>
+      <DetailSection title="Files">
         {contribution.files.map((f, i) => (
           <pre key={i}>
             <code>{pprint(f)}</code>
           </pre>
         ))}
-      </div>
-      <div className="section">
-        <h1>Source</h1>
+      </DetailSection>
+      <DetailSection title="Source">
         <pre>
           Dir: <code>{contribution.source?.dir}</code>
         </pre>
         <pre>
           Key: <code>{pprint(contribution.source?.key)}</code>
         </pre>
-      </div>
-      <div className="section">
-        <h1>Writer</h1>
+      </DetailSection>
+      <DetailSection title="Writer">
         <pre>
           <code>{contribution.writer}</code>
         </pre>
-      </div>
-      <div className="section">
-        <h1>Mapped Functions</h1>
+      </DetailSection>
+      <DetailSection title="Mapped Functions" startOpen>
         {contribution.mapfns.map((fn, i) => (
           <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
         ))}
-      </div>
+      </DetailSection>
     </div>
   );
 }
@@ -119,7 +138,10 @@ export function KeyVisualisation() {
   );
 }
 
-function pprint(k: Key | File) {
+function pprint(k: Key | File | undefined) {
+  if (k === undefined) {
+    return "";
+  }
   if (typeof k === "string") {
     return k;
   }

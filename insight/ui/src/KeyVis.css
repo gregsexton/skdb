@@ -221,7 +221,8 @@
 #keyvis div.contributionDetail.showing > .header > button {
     font-size: 1.4em;
     flex: 0;
-    background-color: var(--kv_gray0);
+    color: var(--kv_gray1);
+    background-color: var(--kv_blue_b);
     padding: 0.2em;
     padding-left: 0.5em;
     padding-right: 0.5em;
@@ -230,8 +231,9 @@
 #keyvis div.contributionDetail.showing > .header > button:hover {
     font-size: 1.4em;
     flex: 0;
-    background-color: var(--kv_gray1);
-    border: 1px solid var(--kv_gray4);
+    color: var(--kv_gray1);
+    background-color: var(--kv_blue_l);
+    border: 1px solid var(--kv_blue_l2);
 }
 
 #keyvis div.contributionDetail.showing > .section {
