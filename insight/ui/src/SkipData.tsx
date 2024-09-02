@@ -315,7 +315,12 @@ function SkipCode({ uri }: { uri: string }) {
       const content = await f.text();
       const lines = content.split("\n");
       const slice = lines.slice(parseInt(sline) - 1, parseInt(eline));
-      setContent(slice.join("\n"));
+      // strip off leading whitespace. assumes spaces as used by skfmt.
+      const wsMargin = slice.reduce((acc, line) => {
+        const match = line.match(/^( +)/);
+        return Math.min(acc, match ? match[0].length : 0);
+      }, Number.MAX_SAFE_INTEGER);
+      setContent(slice.map(x => x.slice(wsMargin)).join("\n"));
     }
   };
 
