@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 
 export type SkipType =
   | SkipLambda
@@ -297,8 +297,36 @@ function SkipCode({ uri }: { uri: string }) {
 
   const [content, setContent] = useState("");
 
+  const loadContent = async () => {
+    let dir: FileSystemDirectoryHandle =
+      pkgDirHandles.get(pkg) ??
+      // @ts-ignore
+      (await window.showDirectoryPicker({ mode: "read" }));
+
+    pkgDirHandles.set(pkg, dir);
+
+    for (const component of relpath.slice(0, -1)) {
+      dir = await dir.getDirectoryHandle(component);
+    }
+
+    for (const file of relpath.slice(-1)) {
+      const fileHandle = await dir.getFileHandle(file);
+      const f = await fileHandle.getFile();
+      const content = await f.text();
+      const lines = content.split("\n");
+      const slice = lines.slice(parseInt(sline) - 1, parseInt(eline));
+      setContent(slice.join("\n"));
+    }
+  };
+
+  useEffect(() => {
+    if (pkgDirHandles.get(pkg)) {
+      loadContent();
+    }
+  }, [uri]);
+
   return (
-    <div>
+    <div className="codeRender">
       <DataBlock>
         <a
           href="#"
@@ -309,25 +337,7 @@ function SkipCode({ uri }: { uri: string }) {
             }
 
             try {
-              let dir: FileSystemDirectoryHandle =
-                pkgDirHandles.get(pkg) ??
-                // @ts-ignore
-                (await window.showDirectoryPicker({ mode: "read" }));
-
-              pkgDirHandles.set(pkg, dir);
-
-              for (const component of relpath.slice(0, -1)) {
-                dir = await dir.getDirectoryHandle(component);
-              }
-
-              for (const file of relpath.slice(-1)) {
-                const fileHandle = await dir.getFileHandle(file);
-                const f = await fileHandle.getFile();
-                const content = await f.text();
-                const lines = content.split("\n");
-                const slice = lines.slice(parseInt(sline) - 1, parseInt(eline));
-                setContent(slice.join("\n"));
-              }
+              loadContent();
             } catch {
               pkgDirHandles.delete(pkg);
               alert(
@@ -341,7 +351,7 @@ function SkipCode({ uri }: { uri: string }) {
           {uri}
         </a>
       </DataBlock>
-      <DataBlock>{content}</DataBlock>
+      {content ? <DataBlock>{content}</DataBlock> : <></>}
     </div>
   );
 }
