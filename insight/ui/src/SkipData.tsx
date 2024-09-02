@@ -117,6 +117,7 @@ function SkipDataTableRow({ k, v }: { k: string | SkipType; v: SkipType }) {
     </tr>
   );
 }
+
 function SkipDataTable({
   entries,
   header = ["Variable", "Value"],
@@ -211,7 +212,7 @@ export function SkipDatum({ value }: { value: SkipType }) {
                 closure.length < 1 ? "Lambda with empty closure" : "Lambda"
               }
             >
-              <DataBlock>{fn.value.source.value}</DataBlock>
+              <SkipCode uri={fn.value.source.value} />
             </TitledBlock>
             {closure.length < 1 ? (
               <></>
@@ -264,4 +265,83 @@ export function SkipDatum({ value }: { value: SkipType }) {
     default:
       return <DataBlock>{JSON.stringify(value)}</DataBlock>;
   }
+}
+
+function parseUri(uri: string) {
+  const uriRe =
+    /^\s*(?<pkg>\w+):(?<relpath>.*?)\((?<sln>\d+), *(?<scol>\d+)\)-\((?<eln>\d+), *(?<ecol>\d+)\)\s*$/;
+  const match = uri.match(uriRe);
+  if (!match) {
+    throw new Error("Could not parse code URI");
+  }
+  if (match.groups == undefined) {
+    throw new Error("Could not parse code URI");
+  }
+  return {
+    pkg: match.groups?.pkg,
+    relpath: match.groups?.relpath?.split("/"), // skdb only runs on unix-like OSs so this should be fairly safe for now
+    start: { line: match.groups?.sln, col: match.groups?.scol },
+    end: { line: match.groups?.eln, col: match.groups?.ecol },
+  };
+}
+
+const pkgDirHandles = new Map<string, FileSystemDirectoryHandle>();
+
+function SkipCode({ uri }: { uri: string }) {
+  const {
+    pkg,
+    relpath,
+    start: { line: sline },
+    end: { line: eline },
+  } = parseUri(uri);
+
+  const [content, setContent] = useState("");
+
+  return (
+    <div>
+      <DataBlock>
+        <a
+          href="#"
+          onClick={async (_e) => {
+            if (content) {
+              setContent("");
+              return;
+            }
+
+            try {
+              let dir: FileSystemDirectoryHandle =
+                pkgDirHandles.get(pkg) ??
+                // @ts-ignore
+                (await window.showDirectoryPicker({ mode: "read" }));
+
+              pkgDirHandles.set(pkg, dir);
+
+              for (const component of relpath.slice(0, -1)) {
+                dir = await dir.getDirectoryHandle(component);
+              }
+
+              for (const file of relpath.slice(-1)) {
+                const fileHandle = await dir.getFileHandle(file);
+                const f = await fileHandle.getFile();
+                const content = await f.text();
+                const lines = content.split("\n");
+                const slice = lines.slice(parseInt(sline) - 1, parseInt(eline));
+                setContent(slice.join("\n"));
+              }
+            } catch {
+              pkgDirHandles.delete(pkg);
+              alert(
+                `Could not find ${relpath.join(
+                  "/",
+                )}. Please locate the source for the ${pkg} directory.}`,
+              );
+            }
+          }}
+        >
+          {uri}
+        </a>
+      </DataBlock>
+      <DataBlock>{content}</DataBlock>
+    </div>
+  );
 }
