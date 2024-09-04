@@ -6,14 +6,23 @@ import data from "../../../gds/log/insight.json?raw";
 import { createDagVis } from "./dag";
 import { SkipDatum, SkipLambda } from "./SkipData";
 
-// TODO: make this a tagged object and include more data
-type File = string | (string | number)[];
-type Key = File;
+interface Row {
+  type: "row";
+  row: (string | number)[];
+  key: string;
+}
+
+interface UnknownObj {
+  type: "unknown";
+  key: string;
+}
+
+type Key = Row | UnknownObj;
 
 interface Contribution {
   tick: number;
   writer: string;
-  files: File[];
+  files: Key[];
   source?: Source;
   mapfns: string[];
 }
@@ -53,9 +62,7 @@ function DetailSection({
         onClick={() => setCollapsed(!collapsed)}
         style={{ cursor: "pointer" }}
       >
-        {collapsed ? "\u25B8" : "\u25BE"}
-          {" "}
-        {title}
+        {collapsed ? "\u25B8" : "\u25BE"} {title}
       </h1>
       {collapsed ? <></> : children}
     </div>
@@ -63,9 +70,11 @@ function DetailSection({
 }
 
 function ContributionDetail({
+  k,
   contribution,
   dismiss,
 }: {
+  k?: Key;
   contribution?: Contribution;
   dismiss: () => void;
 }) {
@@ -79,6 +88,11 @@ function ContributionDetail({
         <h1>Detail</h1>
         <button onClick={() => dismiss()}>&times;</button>
       </div>
+      <DetailSection title="Key">
+        <pre>
+          <code>{pprint(k)}</code>
+        </pre>
+      </DetailSection>
       <DetailSection title="Files">
         {contribution.files.map((f, i) => (
           <pre key={i}>
@@ -111,15 +125,17 @@ function ContributionDetail({
 export function KeyVisualisation() {
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const [contribution, setContribution] = useState<Contribution | undefined>(
-    undefined,
-  );
+  const [detail, setDetail] = useState<
+    { key: Key; contrib: Contribution } | undefined
+  >(undefined);
 
   const [vis, setVis] = useState<Vis | undefined>(undefined);
 
   useLayoutEffect(() => {
     const dag = buildDataModel(getData());
-    const vis = createKeyVis(svgRef.current!!, dag, setContribution);
+    const vis = createKeyVis(svgRef.current!!, dag, (k, c) =>
+      setDetail({ key: k, contrib: c }),
+    );
     setVis(vis);
   }, []);
 
@@ -127,9 +143,10 @@ export function KeyVisualisation() {
     <div id="keyvis">
       <svg width="100%" height="100%" ref={svgRef}></svg>
       <ContributionDetail
-        contribution={contribution}
+        k={detail?.key}
+        contribution={detail?.contrib}
         dismiss={() => {
-          setContribution(undefined);
+          setDetail(undefined);
           vis?.clearViewing();
           vis?.update();
         }}
@@ -138,14 +155,27 @@ export function KeyVisualisation() {
   );
 }
 
-function pprint(k: Key | File | undefined) {
+function pprint(k: Key | undefined) {
   if (k === undefined) {
     return "";
   }
-  if (typeof k === "string") {
-    return k;
+  switch (k.type) {
+    case "row":
+    case "unknown":
+      return k.key;
   }
-  return JSON.stringify(k);
+}
+
+function summarise(k: Key | undefined) {
+  if (k === undefined) {
+    return "";
+  }
+  switch (k.type) {
+    case "row":
+      return JSON.stringify(k.row);
+    case "unknown":
+      return k.key;
+  }
 }
 
 function getData(): Source {
@@ -206,7 +236,7 @@ function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
 function createKeyVis(
   svgElem: SVGSVGElement,
   dag: d3dag.Graph<DirNode, undefined>,
-  viewDetailsFor: (c: Contribution) => void,
+  viewDetailsFor: (key: Key, c: Contribution) => void,
 ): Vis {
   const highlightedDirs = new Set<string>();
   const highlightedSources = new Set<Source>();
@@ -258,7 +288,7 @@ function createKeyVis(
             .append("pre")
             .attr("class", "key")
             .append("code")
-            .text((d) => pprint(d.key));
+            .text((d) => summarise(d.key));
 
           const contributions = div
             .append("div")
@@ -268,7 +298,9 @@ function createKeyVis(
 
           contributions
             .selectAll("div")
-            .data((d) => d.contributions)
+            .data((d) =>
+              d.contributions.map((c) => ({ key: d.key, contrib: c })),
+            )
             .join((enter) => {
               const div = enter.append("div").attr("class", "contribution");
 
@@ -277,10 +309,10 @@ function createKeyVis(
                 highlight(viewing);
                 updateVis();
               });
-              div.on("mouseover", (_e, d) => {
-                if (d.source) {
+              div.on("mouseover", (_e, { contrib }) => {
+                if (contrib.source) {
                   highlight(null);
-                  highlight(d.source);
+                  highlight(contrib.source);
                   updateVis();
                 }
               });
@@ -288,20 +320,20 @@ function createKeyVis(
               div
                 .append("div")
                 .selectAll("pre")
-                .data((d) => d.files)
+                .data(({ contrib }) => contrib.files)
                 .join((enter) => {
                   return enter
                     .append("pre")
                     .attr("class", "file")
                     .append("code");
                 })
-                .text((d) => pprint(d));
+                .text((d) => summarise(d));
 
               div
                 .append("pre")
                 .attr("class", "tick")
                 .append("code")
-                .text((d) => "Tick: " + d.tick);
+                .text(({ contrib }) => "Tick: " + contrib.tick);
 
               div
                 .append("pre")
@@ -310,12 +342,10 @@ function createKeyVis(
                 .append("a")
                 .text(() => "Detail")
                 .attr("href", "#")
-                .on("click", (_e, d) => {
-                  viewing = d.source ?? null;
-                  viewDetailsFor(d);
+                .on("click", (_e, { key, contrib }) => {
+                  viewing = contrib.source ?? null;
+                  viewDetailsFor(key, contrib);
                 });
-
-              // div.append("p").text((d) => d.writer);
 
               return div;
             });

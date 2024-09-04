@@ -30,30 +30,43 @@ private fun jserialiseFloat(x: Float): JSON.Number {
   JSON.FloatNumber(x)
 }
 
+private fun jserialiseValues(values: Array<?SKDB.CValue>): JSON.Array {
+  JSON.Array::createFromIterator(
+    values.iterator().map(v ->
+      v match {
+      | None() -> JSON.Null()
+      | Some(SKDB.CInt(x)) -> jserialiseInt(x)
+      | Some(SKDB.CFloat(x)) -> jserialiseFloat(x)
+      | Some(SKDB.CString(s)) -> jserialiseStr(s)
+      | Some(SKDB.CJSON(_)) -> invariant_violation("TODO: map to JSON")
+      | Some(SKDB.CType _) -> invariant_violation("TODO: map to something")
+      }
+    ),
+  )
+}
+
 private fun jserialiseKey(key: SKStore.Key): JSON.Value {
+  obj = mutable Map<String, JSON.Value>[];
   key match {
-  | k @ SKDB.RowKey _ -> jserialiseFile(k.row)
-  | k @ _ -> jserialise(k)
-  }
+  | k @ SKDB.RowKey _ ->
+    obj!["type"] = jserialiseStr("row");
+    obj!["row"] = jserialiseValues(k.row.values)
+  | _ -> obj!["type"] = jserialiseStr("unknown")
+  };
+  obj!["key"] = jserialise(key);
+  JSON.Object(obj.chill())
 }
 
 private fun jserialiseFile(file: SKStore.File): JSON.Value {
+  obj = mutable Map<String, JSON.Value>[];
   file match {
   | SKDB.RowValues(values, _repeat) ->
-    JSON.Array::createFromIterator(
-      values.iterator().map(v ->
-        v match {
-        | None() -> JSON.Null()
-        | Some(SKDB.CInt(x)) -> jserialiseInt(x)
-        | Some(SKDB.CFloat(x)) -> jserialiseFloat(x)
-        | Some(SKDB.CString(s)) -> jserialiseStr(s)
-        | Some(SKDB.CJSON(_)) -> invariant_violation("TODO: map to JSON")
-        | Some(SKDB.CType _) -> invariant_violation("TODO: map to something")
-        }
-      ),
-    )
-  | _ -> jserialise(file)
-  }
+    obj!["type"] = jserialiseStr("row");
+    obj!["row"] = jserialiseValues(values)
+  | _ -> obj!["type"] = jserialiseStr("unknown")
+  };
+  obj!["key"] = jserialise(file);
+  JSON.Object(obj.chill())
 }
 
 private fun buildDepObject(
@@ -135,7 +148,6 @@ fun upstream(
   dirname: SKStore.DirName,
   key: SKStore.Key,
 ): void {
-  // TODO: parents for the functions that were used at each step
   // TODO: deps from context
 
   obj = buildDepObject(context, dirname, key);
