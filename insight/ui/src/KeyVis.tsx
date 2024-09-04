@@ -88,35 +88,46 @@ function ContributionDetail({
         <h1>Detail</h1>
         <button onClick={() => dismiss()}>&times;</button>
       </div>
-      <DetailSection title="Key">
+      <DetailSection title="Output Key">
         <pre>
           <code>{pprint(k)}</code>
         </pre>
       </DetailSection>
-      <DetailSection title="Files">
+      <DetailSection title="Output Files">
         {contribution.files.map((f, i) => (
           <pre key={i}>
             <code>{pprint(f)}</code>
           </pre>
         ))}
       </DetailSection>
-      <DetailSection title="Source">
+      <DetailSection title="Input Dir">
         <pre>
-          Dir: <code>{contribution.source?.dir}</code>
-        </pre>
-        <pre>
-          Key: <code>{pprint(contribution.source?.key)}</code>
+          <code>{contribution.source?.dir}</code>
         </pre>
       </DetailSection>
-      <DetailSection title="Writer">
+      <DetailSection title="Input Key">
         <pre>
-          <code>{contribution.writer}</code>
+          <code>{pprint(contribution.source?.key)}</code>
         </pre>
+      </DetailSection>
+      <DetailSection title="Input Files">
+        {contribution.source?.contributions
+          .flatMap((c) => c.files)
+          .map((f, i) => (
+            <pre key={i}>
+              <code>{pprint(f)}</code>
+            </pre>
+          ))}
       </DetailSection>
       <DetailSection title="Mapped Functions" startOpen>
         {contribution.mapfns.map((fn, i) => (
           <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
         ))}
+      </DetailSection>
+      <DetailSection title="Writer">
+        <pre>
+          <code>{contribution.writer}</code>
+        </pre>
       </DetailSection>
     </div>
   );
