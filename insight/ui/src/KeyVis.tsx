@@ -6,6 +6,8 @@ import data from "../../../gds/log/insight.json?raw";
 import { createDagVis } from "./dag";
 import { SkipDatum, SkipLambda } from "./SkipData";
 
+import { Resizable } from "re-resizable";
+
 interface Row {
   type: "row";
   row: (string | number)[];
@@ -83,58 +85,72 @@ function ContributionDetail({
   }
 
   return (
-    <div className="contributionDetail showing">
-      <div className="header">
-        <h1>Detail</h1>
-        <button onClick={() => dismiss()}>&times;</button>
-      </div>
-      <DetailSection title="Output Key">
-        <pre>
-          <code>{pprint(k)}</code>
-        </pre>
-      </DetailSection>
-      <DetailSection title="Output Files">
-        {contribution.files.map((f, i) => (
-          <pre key={i}>
-            <code>{pprint(f)}</code>
+    <Resizable
+      defaultSize={{ width: "100%", height: "50%" }}
+      enable={{
+        top: true,
+        right: false,
+        bottom: false,
+        left: false,
+        topRight: false,
+        bottomRight: false,
+        bottomLeft: false,
+        topLeft: false,
+      }}
+    >
+      <div className="contributionDetail showing">
+        <div className="header">
+          <h1>Detail</h1>
+          <button onClick={() => dismiss()}>&times;</button>
+        </div>
+        <DetailSection title="Output Key">
+          <pre>
+            <code>{pprint(k)}</code>
           </pre>
-        ))}
-      </DetailSection>
-      <DetailSection title="Input Dir">
-        <pre>
-          <code>{contribution.source?.dir}</code>
-        </pre>
-      </DetailSection>
-      <DetailSection title="Input Key">
-        <pre>
-          <code>{pprint(contribution.source?.key)}</code>
-        </pre>
-      </DetailSection>
-      <DetailSection title="Input Files">
-        {contribution.source?.contributions
-          .flatMap((c) => c.files)
-          .map((f, i) => (
+        </DetailSection>
+        <DetailSection title="Output Files">
+          {contribution.files.map((f, i) => (
             <pre key={i}>
               <code>{pprint(f)}</code>
             </pre>
           ))}
-      </DetailSection>
-      <DetailSection title="Input -> Output" startOpen>
-        {contribution.mapfns.map((fn, i) => (
-          <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
-        ))}
-      </DetailSection>
-      <DetailSection title="Written">
-        At:
-        <pre>
-          <code>Tick {contribution.tick}</code>
-        </pre>
-        By:
-        <pre>
-          <code>{contribution.writer}</code>
-        </pre>
-      </DetailSection>
-    </div>
+        </DetailSection>
+        <DetailSection title="Input Dir">
+          <pre>
+            <code>{contribution.source?.dir}</code>
+          </pre>
+        </DetailSection>
+        <DetailSection title="Input Key">
+          <pre>
+            <code>{pprint(contribution.source?.key)}</code>
+          </pre>
+        </DetailSection>
+        <DetailSection title="Input Files">
+          {contribution.source?.contributions
+            .flatMap((c) => c.files)
+            .map((f, i) => (
+              <pre key={i}>
+                <code>{pprint(f)}</code>
+              </pre>
+            ))}
+        </DetailSection>
+        <DetailSection title="Input -> Output" startOpen>
+          {contribution.mapfns.map((fn, i) => (
+            <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
+          ))}
+        </DetailSection>
+        <DetailSection title="Written">
+          At:
+          <pre>
+            <code>Tick {contribution.tick}</code>
+          </pre>
+          By:
+          <pre>
+            <code>{contribution.writer}</code>
+          </pre>
+        </DetailSection>
+      </div>
+    </Resizable>
   );
 }
 
