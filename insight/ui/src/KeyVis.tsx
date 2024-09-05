@@ -119,12 +119,17 @@ function ContributionDetail({
             </pre>
           ))}
       </DetailSection>
-      <DetailSection title="Mapped Functions" startOpen>
+      <DetailSection title="Input -> Output" startOpen>
         {contribution.mapfns.map((fn, i) => (
           <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
         ))}
       </DetailSection>
-      <DetailSection title="Writer">
+      <DetailSection title="Written">
+        At:
+        <pre>
+          <code>Tick {contribution.tick}</code>
+        </pre>
+        By:
         <pre>
           <code>{contribution.writer}</code>
         </pre>

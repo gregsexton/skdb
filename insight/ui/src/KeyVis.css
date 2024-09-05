@@ -23,6 +23,10 @@
     --kv_gray7: #000000;
 }
 
+/* ----------------------------------------------------------- */
+/* DAG */
+/* ----------------------------------------------------------- */
+
 #keyvis {
     height: 100%;
     width: 100%;
@@ -188,13 +192,16 @@
     stroke-width: .3;
 }
 
-
+/* ----------------------------------------------------------- */
+/* detail pane */
+/* ----------------------------------------------------------- */
 
 #keyvis div.contributionDetail {
     background: var(--kv_gray0);
     flex: 0 0 content;
     overflow-y: auto;
 }
+
 #keyvis div.contributionDetail.showing {
     height: 50%;
     max-height: 50%;
@@ -303,10 +310,10 @@
 #keyvis div.contributionDetail .skipValueContainer table tbody tr:nth-child(odd) {
     background-color: var(--kv_gray1);
 }
+
 #keyvis div.contributionDetail .skipValueContainer table tbody tr:nth-child(even) {
     background-color: var(--kv_gray2);
 }
-
 
 #keyvis div.contributionDetail .skipValueContainer .codeRender > pre:nth-child(2) {
     background: var(--kv_gray0);
