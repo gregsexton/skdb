@@ -6,6 +6,7 @@
     --kv_blue_b: #2e3c52;
     --kv_blue_l: #3e4a5d;
     --kv_blue_l2: #4e5d75;
+    --kv_blue_link: #3a73cb;
 
     --kv_green: #4a6156;
     --kv_green_l: #aec7bb;
@@ -257,6 +258,10 @@
 #keyvis div.contributionDetail .skipValueContainer {
     padding-left: 0.5em;
     padding-right: 0.5em;
+}
+
+#keyvis div.contributionDetail .skipValueContainer a {
+    color: var(--kv_blue_link);
 }
 
 #keyvis div.contributionDetail .skipValueContainer h3 {
