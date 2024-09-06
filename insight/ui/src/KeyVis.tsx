@@ -27,6 +27,7 @@ interface Contribution {
   files: Key[];
   source?: Source;
   mapfns: string[];
+  deps: Source[];
 }
 
 interface Source {

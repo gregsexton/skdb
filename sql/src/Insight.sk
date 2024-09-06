@@ -73,13 +73,13 @@ private fun buildDepObject(
   context: mutable SKStore.Context,
   dirname: SKStore.DirName,
   key: SKStore.Key,
-): JSON.Object {
+): ?JSON.Object {
   obj = mutable Map<String, JSON.Value>[];
   obj!["dir"] = JSON.String(dirname.dirName);
   obj!["key"] = jserialiseKey(key);
 
   dir = context.dirs.maybeGet(dirname) match {
-  | None() -> invariant_violation(`could not find ${dirname}`)
+  | None() -> return None() // TODO: is this right? when does it occur? shouldn't missing dirs gc deps?
   | Some(dir @ SKStore.EagerDir _) -> dir
   | Some(_) -> invariant_violation("unsupported dir type")
   };
@@ -133,14 +133,27 @@ private fun buildDepObject(
         context,
         source.dirName,
         source.baseName,
-      );
+      ).fromSome();
+    };
+
+    context.deps.idata.maybeGet(dirname) match {
+    | None() -> void
+    | Some(paths) ->
+      reads = mutable Vector[];
+      for (path in paths) {
+        buildDepObject(context, path.dirName, path.baseName) match {
+        | None() -> void
+        | Some(o) -> reads.push(o)
+        }
+      };
+      contribution!["reads"] = JSON.Array(reads.chill())
     };
 
     contributions.push(JSON.Object(contribution.chill()));
   };
 
   obj!["contributions"] = JSON.Array(contributions.chill());
-  JSON.Object(obj.chill());
+  Some(JSON.Object(obj.chill()));
 }
 
 fun upstream(
@@ -150,7 +163,7 @@ fun upstream(
 ): void {
   // TODO: deps from context
 
-  obj = buildDepObject(context, dirname, key);
+  obj = buildDepObject(context, dirname, key).fromSome();
   print_string(obj.encode());
 }
 
