@@ -72,15 +72,15 @@ function DetailSection({
 }
 
 function ContributionDetail({
-  k,
+  source,
   contribution,
   dismiss,
 }: {
-  k?: Key;
+  source?: Source;
   contribution?: Contribution;
   dismiss: () => void;
 }) {
-  if (contribution === undefined) {
+  if (contribution === undefined || source === undefined) {
     return <div className="contributionDetail" />;
   }
 
@@ -103,43 +103,55 @@ function ContributionDetail({
           <h1>Detail</h1>
           <button onClick={() => dismiss()}>&times;</button>
         </div>
-        <DetailSection title="Output Key">
+        <DetailSection title={source.dir_is_input ? "Key" : "Output Key"}>
           <pre>
-            <code>{pprint(k)}</code>
+            <code>{pprint(source.key)}</code>
           </pre>
         </DetailSection>
-        <DetailSection title="Output Files">
+        <DetailSection title={source.dir_is_input ? "Files" : "Output Files"}>
           {contribution.files.map((f, i) => (
             <pre key={i}>
               <code>{pprint(f)}</code>
             </pre>
           ))}
         </DetailSection>
-        <DetailSection title="Input Dir">
-          <pre>
-            <code>{contribution.source?.dir}</code>
-          </pre>
-        </DetailSection>
-        <DetailSection title="Input Key">
-          <pre>
-            <code>{pprint(contribution.source?.key)}</code>
-          </pre>
-        </DetailSection>
-        <DetailSection title="Input Files">
-          {contribution.source?.contributions
-            .flatMap((c) => c.files)
-            .map((f, i) => (
-              <pre key={i}>
-                <code>{pprint(f)}</code>
+        {source.dir_is_input ? (
+          <></>
+        ) : (
+          <>
+            <DetailSection title="Input Dir">
+              <pre>
+                <code>{contribution.source?.dir}</code>
               </pre>
-            ))}
+            </DetailSection>
+            <DetailSection title="Input Key">
+              <pre>
+                <code>{pprint(contribution.source?.key)}</code>
+              </pre>
+            </DetailSection>
+            <DetailSection title="Input Files">
+              {contribution.source?.contributions
+                .flatMap((c) => c.files)
+                .map((f, i) => (
+                  <pre key={i}>
+                    <code>{pprint(f)}</code>
+                  </pre>
+                ))}
+            </DetailSection>
+          </>
+        )}
+        <DetailSection title="Input -> Output">
+          {source.dir_is_input ? (
+            <pre>
+              This is an input directory. It is not defined by a function.
+            </pre>
+          ) : (
+            contribution.mapfns.map((fn, i) => (
+              <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
+            ))
+          )}
         </DetailSection>
-        <DetailSection title="Input -> Output" startOpen>
-          {contribution.mapfns.map((fn, i) => (
-            <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
-          ))}
-        </DetailSection>
-        <DetailSection title="Written">
+        <DetailSection title="Write Metadata">
           At:
           <pre>
             <code>Tick {contribution.tick}</code>
@@ -158,15 +170,15 @@ export function KeyVisualisation() {
   const svgRef = useRef<SVGSVGElement>(null);
 
   const [detail, setDetail] = useState<
-    { key: Key; contrib: Contribution } | undefined
+    { source: Source; contrib: Contribution } | undefined
   >(undefined);
 
   const [vis, setVis] = useState<Vis | undefined>(undefined);
 
   useLayoutEffect(() => {
     const dag = buildDataModel(getData());
-    const vis = createKeyVis(svgRef.current!!, dag, (k, c) =>
-      setDetail({ key: k, contrib: c }),
+    const vis = createKeyVis(svgRef.current!!, dag, (s, c) =>
+      setDetail({ source: s, contrib: c }),
     );
     setVis(vis);
   }, []);
@@ -175,7 +187,7 @@ export function KeyVisualisation() {
     <div id="keyvis">
       <svg width="100%" height="100%" ref={svgRef}></svg>
       <ContributionDetail
-        k={detail?.key}
+        source={detail?.source}
         contribution={detail?.contrib}
         dismiss={() => {
           setDetail(undefined);
@@ -268,7 +280,7 @@ function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
 function createKeyVis(
   svgElem: SVGSVGElement,
   dag: d3dag.Graph<DirNode, undefined>,
-  viewDetailsFor: (key: Key, c: Contribution) => void,
+  viewDetailsFor: (src: Source, c: Contribution) => void,
 ): Vis {
   const highlightedDirs = new Set<string>();
   const highlightedSources = new Set<Source>();
@@ -331,7 +343,7 @@ function createKeyVis(
           contributions
             .selectAll("div")
             .data((d) =>
-              d.contributions.map((c) => ({ key: d.key, contrib: c })),
+              d.contributions.map((c) => ({ source: d, contrib: c })),
             )
             .join((enter) => {
               const div = enter.append("div").attr("class", "contribution");
@@ -374,9 +386,9 @@ function createKeyVis(
                 .append("a")
                 .text(() => "Detail")
                 .attr("href", "#")
-                .on("click", (_e, { key, contrib }) => {
+                .on("click", (_e, { source, contrib }) => {
                   viewing = contrib.source ?? null;
-                  viewDetailsFor(key, contrib);
+                  viewDetailsFor(source, contrib);
                 });
 
               return div;
