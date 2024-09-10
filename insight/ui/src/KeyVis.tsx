@@ -27,7 +27,7 @@ interface Contribution {
   files: Key[];
   source?: Source;
   mapfns: string[];
-  deps: Source[];
+  reads: Source[];
 }
 
 interface Source {
@@ -229,13 +229,20 @@ function getData(): Source {
 
 function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
   const nodes: DirNode[] = [];
-
   const nodeIdx = new Map();
 
   function walk(src: Source) {
     const id = src.dir;
 
     let idx = nodeIdx.get(id);
+
+    const getContributingDirs = (c: Contribution) => {
+      const depDirs = c.reads.map((d) => d.dir);
+      if (c.source) {
+        return [c.source.dir, ...depDirs];
+      }
+      return depDirs;
+    };
 
     if (idx === undefined) {
       idx = nodes.length;
@@ -244,9 +251,7 @@ function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
         dir: src.dir,
         keys: [src],
         id: id,
-        parentIds: src.dir_is_input
-          ? []
-          : src.contributions.map((c) => c.source!.dir),
+        parentIds: src.contributions.flatMap(getContributingDirs),
       };
       nodes.push(node);
     } else {
@@ -255,7 +260,7 @@ function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
       node.keys.push(src);
       if (!src.dir_is_input) {
         src.contributions
-          .map((c) => c.source!.dir)
+          .flatMap(getContributingDirs)
           .forEach((x) => node.parentIds.push(x));
       }
     }
@@ -263,6 +268,9 @@ function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
     for (const c of src.contributions ?? []) {
       if (!src.dir_is_input) {
         walk(c.source!);
+      }
+      for (const depSrc of c.reads) {
+        walk(depSrc);
       }
     }
   }

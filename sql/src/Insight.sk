@@ -79,7 +79,8 @@ private fun buildDepObject(
   obj!["key"] = jserialiseKey(key);
 
   dir = context.dirs.maybeGet(dirname) match {
-  | None() -> return None() // TODO: is this right? when does it occur? shouldn't missing dirs gc deps?
+  | None() ->
+    return None() // TODO: is this right? when does it occur? shouldn't missing dirs gc deps?
   | Some(dir @ SKStore.EagerDir _) -> dir
   | Some(_) -> invariant_violation("unsupported dir type")
   };
@@ -136,18 +137,18 @@ private fun buildDepObject(
       ).fromSome();
     };
 
+    reads = mutable Vector[];
     context.deps.idata.maybeGet(dirname) match {
     | None() -> void
     | Some(paths) ->
-      reads = mutable Vector[];
       for (path in paths) {
         buildDepObject(context, path.dirName, path.baseName) match {
         | None() -> void
         | Some(o) -> reads.push(o)
         }
-      };
-      contribution!["reads"] = JSON.Array(reads.chill())
+      }
     };
+    contribution!["reads"] = JSON.Array(reads.chill());
 
     contributions.push(JSON.Object(contribution.chill()));
   };
