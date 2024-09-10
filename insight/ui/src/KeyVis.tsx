@@ -257,11 +257,16 @@ function buildDataModel(src: Source): d3dag.Graph<DirNode, undefined> {
     } else {
       const node = nodes[idx];
 
-      node.keys.push(src);
-      if (!src.dir_is_input) {
-        src.contributions
-          .flatMap(getContributingDirs)
-          .forEach((x) => node.parentIds.push(x));
+      if (
+        !node.keys.find((k) => k.dir === src.dir && k.key.key === src.key.key)
+      ) {
+        node.keys.push(src);
+
+        if (!src.dir_is_input) {
+          src.contributions
+            .flatMap(getContributingDirs)
+            .forEach((x) => node.parentIds.push(x));
+        }
       }
     }
 
@@ -292,7 +297,7 @@ function createKeyVis(
   viewDetailsFor: (src: Source, c: Contribution) => void,
 ): Vis {
   const highlightedDirs = new Set<string>();
-  const highlightedSources = new Set<Source>();
+  const highlightedSources = new Map<string, Set<string>>();
   let viewing: Source | null = null;
 
   const highlight = (src?: Source | null) => {
@@ -309,8 +314,20 @@ function createKeyVis(
     }
 
     highlightedDirs.add(src.dir);
-    highlightedSources.add(src);
-    src.contributions.forEach((c) => highlight(c.source));
+    const { dir, key } = src;
+    const keys = highlightedSources.get(dir) || new Set();
+    keys.add(key.key);
+    highlightedSources.set(dir, keys);
+    src.contributions.forEach((c) => {
+      highlight(c.source);
+      for (const readSrc of c.reads) {
+        highlight(readSrc);
+      }
+    });
+  };
+
+  const isHighlighted = (dir: string, key: string): boolean => {
+    return highlightedSources.get(dir)?.has(key) || false;
   };
 
   const updateVis = createDagVis<DirNode, undefined>(
@@ -345,7 +362,8 @@ function createKeyVis(
 
           const contributions = div
             .append("div")
-            .attr("class", "contributions");
+            .attr("class", "contributions")
+            .classed("highlighted", (d) => isHighlighted(d.dir, d.key.key));
 
           contributions.append("span").text("Files").attr("class", "heading");
 
@@ -363,11 +381,12 @@ function createKeyVis(
                 updateVis();
               });
               div.on("mouseover", (_e, { contrib }) => {
-                if (contrib.source) {
-                  highlight(null);
-                  highlight(contrib.source);
-                  updateVis();
+                highlight(null);
+                highlight(contrib.source);
+                for (const readSrc of contrib.reads) {
+                  highlight(readSrc);
                 }
+                updateVis();
               });
 
               div
@@ -414,7 +433,7 @@ function createKeyVis(
         .selectAll("div")
         .selectAll(".contributions")
         //@ts-ignore
-        .classed("highlighted", (d) => highlightedSources.has(d));
+        .classed("highlighted", (d) => isHighlighted(d.dir, d.key.key));
     },
     // link enter
     (d) => {
