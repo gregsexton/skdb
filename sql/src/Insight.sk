@@ -144,16 +144,18 @@ private fun buildDepObject(
       for (path in paths) {
         context.deps.maybeGet(path) match {
         | None() -> invariant_violation("Deps data structure is inconsistent")
-        | Some(arrowKeys) ->
-          for (ak in arrowKeys) {
-            if (ak.key == source.baseName) {
-              buildDepObject(context, path.dirName, path.baseName) match {
-              | None() -> void
-              | Some(o) -> reads.push(o)
-              };
-              break void;
-            }
+        | Some(
+          arrowKeys,
+        ) if (
+          arrowKeys.contains(
+            SKStore.ArrowKey(source.dirName, dirname, source.baseName),
+          )
+        ) ->
+          buildDepObject(context, path.dirName, path.baseName) match {
+          | None() -> void
+          | Some(o) -> reads.push(o)
           }
+        | _ -> void
         }
       }
     };
