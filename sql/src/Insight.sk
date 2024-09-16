@@ -142,9 +142,18 @@ private fun buildDepObject(
     | None() -> void
     | Some(paths) ->
       for (path in paths) {
-        buildDepObject(context, path.dirName, path.baseName) match {
-        | None() -> void
-        | Some(o) -> reads.push(o)
+        context.deps.maybeGet(path) match {
+        | None() -> invariant_violation("Deps data structure is inconsistent")
+        | Some(arrowKeys) ->
+          for (ak in arrowKeys) {
+            if (ak.key == source.baseName) {
+              buildDepObject(context, path.dirName, path.baseName) match {
+              | None() -> void
+              | Some(o) -> reads.push(o)
+              };
+              break void;
+            }
+          }
         }
       }
     };
