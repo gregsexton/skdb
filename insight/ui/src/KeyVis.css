@@ -327,3 +327,36 @@
     margin-bottom: 1em;
     border: solid 1px var(--kv_gray4);
 }
+
+#keyvis div.contributionDetail .reads {
+    border: 1px solid var(--kv_gray4);
+    width: 100%;
+    max-width: 100%;
+    table-layout: auto;
+    margin-bottom: .5em;
+    background-color: var(--kv_gray0);
+    border-collapse: separate;
+    border-spacing: 1px 0px;;
+}
+
+#keyvis div.contributionDetail .reads thead th {
+    font-weight: normal;
+    text-align: left;
+    padding-top: .5em;
+    padding-left: .5em;
+    padding-right: .5em;
+    padding-bottom: .5em;
+    color: var(--kv_gray1);
+    background-color: var(--kv_blue_b);
+}
+
+#keyvis div.contributionDetail .reads tbody {
+    color: var(--kv_blue_b);
+}
+
+#keyvis div.contributionDetail .reads tbody tr td {
+    padding-left: .5em;
+    padding-right: .5em;
+    vertical-align: top;
+    overflow: auto;
+}

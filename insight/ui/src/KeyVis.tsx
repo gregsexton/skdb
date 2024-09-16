@@ -141,7 +141,7 @@ function ContributionDetail({
             </DetailSection>
           </>
         )}
-        <DetailSection title="Input -> Output">
+        <DetailSection title="Input -> Output mapping function">
           {source.dir_is_input ? (
             <pre>
               This is an input directory. It is not defined by a function.
@@ -151,6 +151,42 @@ function ContributionDetail({
               <SkipDatum value={JSON.parse(fn) as SkipLambda} key={i} />
             ))
           )}
+        </DetailSection>
+        <DetailSection title="Reads made by mapping function">
+          <table className="reads">
+            <thead>
+              <tr>
+                <th>Dir</th>
+                <th>Key</th>
+                <th>Files</th>
+              </tr>
+            </thead>
+            <tbody>
+              {contribution.reads.map((r, i) => (
+                <tr key={i}>
+                  <td>
+                    <pre>
+                      <code>{r?.dir}</code>
+                    </pre>
+                  </td>
+                  <td>
+                    <pre>
+                      <code>{pprint(r?.key)}</code>
+                    </pre>
+                  </td>
+                  <td>
+                    {r?.contributions
+                      .flatMap((c) => c.files)
+                      .map((f, i) => (
+                        <pre key={i}>
+                          <code>{pprint(f)}</code>
+                        </pre>
+                      ))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </DetailSection>
         <DetailSection title="Write Metadata">
           At:
