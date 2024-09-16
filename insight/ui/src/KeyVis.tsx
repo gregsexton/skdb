@@ -298,7 +298,7 @@ function createKeyVis(
 ): Vis {
   const highlightedDirs = new Set<string>();
   const highlightedSources = new Map<string, Set<string>>();
-  let viewing: Source | null = null;
+  let viewing: Contribution | undefined = undefined;
 
   const highlight = (src?: Source | null) => {
     // undefined is we couldn't find a src
@@ -377,7 +377,10 @@ function createKeyVis(
 
               div.on("mouseout", () => {
                 highlight(null);
-                highlight(viewing);
+                highlight(viewing?.source ?? null);
+                for (const readSrc of viewing?.reads ?? []) {
+                  highlight(readSrc);
+                }
                 updateVis();
               });
               div.on("mouseover", (_e, { contrib }) => {
@@ -415,7 +418,7 @@ function createKeyVis(
                 .text(() => "Detail")
                 .attr("href", "#")
                 .on("click", (_e, { source, contrib }) => {
-                  viewing = contrib.source ?? null;
+                  viewing = contrib;
                   viewDetailsFor(source, contrib);
                 });
 
@@ -456,7 +459,7 @@ function createKeyVis(
   return {
     update: updateVis,
     clearViewing: () => {
-      viewing = null;
+      viewing = undefined;
       highlight(null);
     },
   };
