@@ -29,7 +29,6 @@ export function createDagVis<Node, Edge>(
   const nodes = svg.append("g").attr("id", "nodes");
   const links = svg.append("g").attr("id", "links");
 
-  // TODO: extract these numbers to input params
   const [nodeW, nodeH] = [900, 600];
   const layout = d3dag.sugiyama().nodeSize([nodeW, nodeH]).gap([50, 200]);
   layout(dag);
@@ -199,7 +198,7 @@ export function createDagVis<Node, Edge>(
     });
 
   updateVis();
-  updateVis(); // TODO: why do I need to call this twice?! something is async perhaps?
+  updateVis();
 
   const leafNode = dag.leaves().next().value;
   const leafMid = [-(leafNode.x + nodeW / 2), -(leafNode.y + nodeH / 2)];
